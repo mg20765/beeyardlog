@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
 export default function ActionButtons({
   onAdd,
@@ -9,8 +9,10 @@ export default function ActionButtons({
   exportDisabled,
   backupDisabled,
   importMessage,
+  count,
 }) {
   const fileInputRef = useRef(null);
+  const [confirmingClear, setConfirmingClear] = useState(false);
 
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
@@ -65,9 +67,42 @@ export default function ActionButtons({
       />
       {importMessage && <p className="hive-import-msg">{importMessage}</p>}
 
-      <button type="button" className="hive-btn-clear" onClick={onClear}>
-        Clear log
-      </button>
+      {confirmingClear ? (
+        <div className="hive-missing-warning">
+          <p>
+            Delete all {count} inspection{count === 1 ? "" : "s"} from this
+            device? <strong>This can't be undone.</strong> Back up first if
+            you might need them.
+          </p>
+          <div className="hive-row2">
+            <button
+              type="button"
+              className="hive-btn-outline"
+              onClick={() => setConfirmingClear(false)}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="hive-btn-clear"
+              onClick={() => {
+                setConfirmingClear(false);
+                onClear();
+              }}
+            >
+              Yes, clear all
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button
+          type="button"
+          className="hive-btn-clear"
+          onClick={() => (count > 0 ? setConfirmingClear(true) : onClear())}
+        >
+          Clear log
+        </button>
+      )}
     </>
   );
 }

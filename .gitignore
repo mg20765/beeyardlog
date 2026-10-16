@@ -33,3 +33,6 @@ playwright/.cache/
 *.njsproj
 *.sln
 *.sw?
+
+# Claude Code notes (local only)
+.claude/

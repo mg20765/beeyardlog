@@ -39,6 +39,7 @@ function hasValue(v) {
 
 export default function InspectionLog({ log, loading, deleteEntry }) {
   const [expandedId, setExpandedId] = useState(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
   return (
     <div className="hive-log-section">
@@ -89,13 +90,41 @@ export default function InspectionLog({ log, loading, deleteEntry }) {
                   className="hive-del-btn"
                   onClick={(e) => {
                     e.stopPropagation();
-                    deleteEntry(r.id);
+                    setConfirmDeleteId(r.id);
                   }}
                   aria-label="Delete"
                 >
                   ✕
                 </button>
               </div>
+              {confirmDeleteId === r.id && (
+                <div className="hive-missing-warning">
+                  <p>
+                    Delete the entry for{" "}
+                    <strong>{r["Hive ID"] || "Unnamed hive"}</strong>? This
+                    can't be undone.
+                  </p>
+                  <div className="hive-row2">
+                    <button
+                      type="button"
+                      className="hive-btn-outline"
+                      onClick={() => setConfirmDeleteId(null)}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      className="hive-btn-clear"
+                      onClick={() => {
+                        setConfirmDeleteId(null);
+                        deleteEntry(r.id);
+                      }}
+                    >
+                      Yes, delete
+                    </button>
+                  </div>
+                </div>
+              )}
               {isOpen && (
                 <div className="hive-log-detail">
                   {details.length === 0 ? (

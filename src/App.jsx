@@ -72,6 +72,7 @@ export default function HiveLogbook() {
         onRestoreFile={restoreFromFile}
         exportDisabled={log.length === 0}
         backupDisabled={log.length === 0}
+        count={log.length}
         importMessage={importMessage}
       />
 

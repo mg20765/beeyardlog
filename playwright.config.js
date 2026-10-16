@@ -11,9 +11,18 @@ export default defineConfig({
     trace: "on-first-retry",
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
-  webServer: {
-    command: "npm run dev -- --port 5173 --strictPort",
-    url: "http://localhost:5173",
-    reuseExistingServer: !process.env.CI,
-  },
+  webServer: [
+    {
+      command: "npm run dev -- --port 5173 --strictPort",
+      url: "http://localhost:5173",
+      reuseExistingServer: !process.env.CI,
+    },
+    {
+      // Production build, for the service worker / offline test.
+      command: "npm run build && npm run preview -- --port 4173 --strictPort",
+      url: "http://localhost:4173",
+      reuseExistingServer: !process.env.CI,
+      timeout: 120_000,
+    },
+  ],
 });

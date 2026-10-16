@@ -44,6 +44,7 @@ test("delete entry", async ({ page }) => {
   await expect(page.locator(".hive-log-title", { hasText: "H2" })).toBeVisible();
 
   await page.getByRole("button", { name: "Delete", exact: true }).click();
+  await page.getByRole("button", { name: "Yes, delete" }).click();
 
   await expect(page.getByText("No inspections logged yet")).toBeVisible();
 });

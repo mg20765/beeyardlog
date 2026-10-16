@@ -50,6 +50,7 @@ export default function useHiveLog() {
   const [missingFields, setMissingFields] = useState(null); // array of {key,label} or null
   const savedTimeoutRef = useRef(null);
   const messageTimeoutRef = useRef(null);
+  const savingRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -97,13 +98,32 @@ export default function useHiveLog() {
   const setCheck = (key) => (e) =>
     setForm((f) => ({ ...f, [key]: e.target.checked }));
 
+  // The ref (not state) guards against a double-tap: state updates are
+  // async, so two quick taps would both see "not saving" and add twice.
   const commitAddToLog = async () => {
-    const saved = await addInspection(formToRow(form));
-    setLog((prev) => [...prev, saved]);
-    setForm(initialForm());
+    if (savingRef.current) return;
+    savingRef.current = true;
+    try {
+      const saved = await addInspection(formToRow(form));
+      setLog((prev) => [...prev, saved]);
+      setForm(initialForm());
+      setMissingFields(null);
+      flashSaved();
+      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+    } catch (err) {
+      console.warn("Could not save inspection:", err);
+      flashMessage("Couldn't save this entry. Your form is kept - try again.");
+    } finally {
+      savingRef.current = false;
+    }
+  };
+
+  const requireHiveId = () => {
+    if (!isHiveIdMissing(form)) return true;
     setMissingFields(null);
-    flashSaved();
-    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+    setHiveIdError(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    return false;
   };
 
   // Called by the "+ Add to log" button. Blocks on a missing Hive ID
@@ -111,11 +131,7 @@ export default function useHiveLog() {
   // warning for the handful of other fields worth double-checking before
   // saving, rather than only noticing they're blank later in Excel.
   const addToLog = async () => {
-    if (isHiveIdMissing(form)) {
-      setHiveIdError(true);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      return;
-    }
+    if (!requireHiveId()) return;
     const missing = getMissingNudgeFields(form);
     if (missing.length > 0) {
       setMissingFields(missing);
@@ -124,7 +140,10 @@ export default function useHiveLog() {
     await commitAddToLog();
   };
 
+  // The Hive ID could have been cleared while the warning was showing, so
+  // the hard requirement is checked again here.
   const confirmAddAnyway = async () => {
+    if (!requireHiveId()) return;
     await commitAddToLog();
   };
 
@@ -140,15 +159,25 @@ export default function useHiveLog() {
   };
 
   const deleteEntry = async (id) => {
-    await deleteInspection(id);
-    setLog((prev) => prev.filter((r) => r.id !== id));
+    try {
+      await deleteInspection(id);
+      setLog((prev) => prev.filter((r) => r.id !== id));
+    } catch (err) {
+      console.warn("Could not delete inspection:", err);
+      flashMessage("Couldn't delete that entry. Please try again.");
+    }
   };
 
   const clearLog = async () => {
-    await clearInspections();
-    setLog([]);
-    setLastBackupCount(0);
-    saveLastBackupCount(0);
+    try {
+      await clearInspections();
+      setLog([]);
+      setLastBackupCount(0);
+      saveLastBackupCount(0);
+    } catch (err) {
+      console.warn("Could not clear log:", err);
+      flashMessage("Couldn't clear the log. Please try again.");
+    }
   };
 
   const exportAll = () => {
