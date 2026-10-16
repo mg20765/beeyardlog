@@ -1,0 +1,466 @@
+/* ── HiveLogbook.css ─────────────────────────────── */
+
+:root {
+  --green: #1d9e75;
+  --blue: #185fa5;
+  --blue-disabled: #b0c8e0;
+  --bg: #faf9f6;
+  --card-bg: #fff;
+  --log-bg: #f5f3ef;
+  --border: #e8e5df;
+  --input-border: #e0ddd7;
+  --text: #1a1a1a;
+  --muted: #888;
+  --label: #aaa;
+  --badge-bg: #e1f5ee;
+  --badge-text: #085041;
+  --font: "Georgia", serif;
+}
+
+/* ── Layout ─────────────────────────────────────── */
+
+.hive-app {
+  font-family: var(--font);
+  font-size: 14px;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 1rem;
+  color: var(--text);
+  background: var(--bg);
+  min-height: 100vh;
+}
+
+/* Tablet / larger screens: give the form more breathing room instead of
+   stretching a phone-width column across the whole viewport. */
+@media (min-width: 700px) {
+  .hive-app {
+    max-width: 640px;
+    padding: 2rem 1.5rem;
+  }
+}
+
+/* Header styles now live in src/NavBar/Header.css */
+
+/* ── Section card ───────────────────────────────── */
+
+.hive-section {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 10px;
+}
+
+.hive-section__title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--label);
+  margin: 0 0 12px;
+}
+
+/* ── Form grid & fields ─────────────────────────── */
+
+.hive-row2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.hive-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hive-label {
+  font-size: 11px;
+  color: var(--muted);
+  font-family: var(--font);
+}
+
+.hive-input {
+  /* 16px keeps iOS Safari from auto-zooming the page when a field is focused */
+  font-size: 16px;
+  padding: 9px 10px;
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  outline: none;
+  font-family: var(--font);
+  width: 100%;
+  box-sizing: border-box;
+  accent-color: var(--green);
+}
+
+.hive-input--error {
+  border-color: #c0392b;
+  background: #fdecea;
+}
+
+.hive-field-error {
+  font-size: 11px;
+  color: #c0392b;
+  margin: 2px 0 0;
+}
+
+.hive-missing-warning {
+  background: #eaf2fb;
+  border: 1px solid #bcd6f0;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+
+.hive-missing-warning p {
+  font-size: 13px;
+  color: #1a4d7a;
+  margin: 0 0 10px;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.hive-missing-warning .hive-row2 {
+  margin-bottom: 0;
+}
+
+.hive-textarea {
+  font-size: 16px;
+  padding: 9px 10px;
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  outline: none;
+  font-family: var(--font);
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 60px;
+  resize: vertical;
+}
+
+/* ── Radio group ────────────────────────────────── */
+
+.hive-radio-group {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.hive-radio-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--text);
+  padding: 4px 0;
+}
+
+.hive-radio-item input {
+  accent-color: var(--green);
+  width: 17px;
+  height: 17px;
+}
+
+/* ── Checkbox grid ──────────────────────────────── */
+
+.hive-chk-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.hive-chk-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--text);
+  padding: 4px 0;
+}
+
+.hive-chk-item input[type="checkbox"] {
+  accent-color: var(--green);
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.hive-subblock {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-soft, rgba(0, 0, 0, 0.02));
+}
+
+.hive-chk-item--alert {
+  margin-top: 12px;
+  padding: 8px 10px;
+  background: #fdecea;
+  border: 1px solid #f3c1bb;
+  border-radius: 8px;
+  color: #8a2b20;
+  font-weight: 600;
+}
+
+.hive-chk-item--alert input[type="checkbox"] {
+  accent-color: #c0392b;
+}
+
+.hive-chk-item--nested {
+  margin-top: 8px;
+  margin-left: 16px;
+  background: #fff;
+}
+
+/* ── Level buttons ──────────────────────────────── */
+
+.hive-lvl-group {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.hive-lvl-btn {
+  padding: 9px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--input-border);
+  font-size: 13px;
+  cursor: pointer;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  transition: all 0.12s;
+  flex: 1;
+}
+
+.hive-lvl-btn--active {
+  border-color: var(--green);
+  background: var(--green);
+  color: #fff;
+}
+
+/* ── Backup reminder ────────────────────────────── */
+
+.hive-backup-reminder {
+  background: #fff8e6;
+  border: 1px solid #f0dca0;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.hive-backup-reminder p {
+  font-size: 12px;
+  color: #6b5416;
+  margin: 0 0 8px;
+  line-height: 1.4;
+}
+
+.hive-backup-reminder .hive-btn-outline {
+  width: 100%;
+  border-color: #e0c46f;
+  color: #6b5416;
+  font-weight: 600;
+}
+
+/* ── Action buttons ─────────────────────────────── */
+
+.hive-btn-add {
+  width: 100%;
+  padding: 12px;
+  background: var(--green);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 8px;
+  font-family: var(--font);
+}
+
+.hive-btn-export {
+  width: 100%;
+  padding: 12px;
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 8px;
+  font-family: var(--font);
+}
+
+.hive-btn-export:disabled {
+  background: var(--blue-disabled);
+  cursor: not-allowed;
+}
+
+.hive-btn-outline {
+  padding: 9px;
+  background: transparent;
+  border: 1px solid var(--input-border);
+  border-radius: 12px;
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: var(--font);
+}
+
+.hive-btn-outline:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.hive-btn-hint {
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+  margin: 0 0 10px;
+  line-height: 1.4;
+}
+
+.hive-import-msg {
+  font-size: 12px;
+  color: var(--badge-text);
+  text-align: center;
+  margin: 0 0 8px;
+}
+
+.hive-btn-clear {
+  width: 100%;
+  padding: 9px;
+  background: transparent;
+  border: 1px solid var(--input-border);
+  border-radius: 12px;
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: var(--font);
+}
+
+/* ── Log section ────────────────────────────────── */
+
+.hive-log-section {
+  background: var(--log-bg);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 10px;
+}
+
+.hive-log-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+}
+
+.hive-log-title {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text);
+}
+
+.hive-log-sub {
+  font-size: 11px;
+  color: var(--muted);
+  margin: 2px 0 0;
+}
+
+.hive-log-expand-hint {
+  color: var(--green);
+  font-weight: 600;
+}
+
+.hive-log-detail {
+  background: var(--card-bg);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin: 0 0 8px;
+}
+
+.hive-log-detail-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 3px 0;
+  font-size: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.hive-log-detail-row:last-child {
+  border-bottom: none;
+}
+
+.hive-log-detail-key {
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.hive-log-detail-val {
+  color: var(--text);
+  text-align: right;
+}
+
+.hive-log-detail-empty {
+  font-size: 12px;
+  color: var(--label);
+  margin: 0;
+}
+
+.hive-badge {
+  display: inline-block;
+  background: var(--badge-bg);
+  color: var(--badge-text);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 99px;
+  margin-left: 6px;
+}
+
+.hive-count-badge {
+  display: inline-block;
+  background: var(--green);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 99px;
+  margin-left: 6px;
+}
+
+.hive-del-btn {
+  background: none;
+  border: none;
+  color: #bbb;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 10px 12px;
+  margin: -10px -12px;
+  border-radius: 6px;
+}
+
+.hive-empty-state {
+  text-align: center;
+  padding: 1.5rem 0;
+  color: var(--label);
+  font-size: 13px;
+}
+
+.hive-divider {
+  height: 1px;
+  background: var(--border);
+}

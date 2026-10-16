@@ -1,0 +1,13 @@
+export default function NotesSection({ form, set }) {
+  return (
+    <div className="hive-section">
+      <p className="hive-section__title">Notes</p>
+      <textarea
+        className="hive-textarea"
+        value={form.notes}
+        onChange={set("notes")}
+        placeholder="General observations…"
+      />
+    </div>
+  );
+}
