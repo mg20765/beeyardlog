@@ -3,7 +3,15 @@
   margin-bottom: 1.5rem;
 }
 
+.hive-header__bee {
+  height: 32px;
+  width: auto;
+}
+
 .hive-header__title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   font-size: 22px;
   font-weight: 700;
   letter-spacing: -0.02em;
