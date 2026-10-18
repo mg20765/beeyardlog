@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import * as XLSX from "xlsx";
 import { initialForm, formToRow } from "../utils/hiveForm.js";
 import { omitId } from "../utils/omitId.js";
+import { rowsForExport } from "../utils/exportRows.js";
+import { todayLocal } from "../utils/date.js";
 import { isHiveIdMissing, getMissingNudgeFields } from "../utils/validation.js";
 import {
   getAllInspections,
@@ -11,27 +13,37 @@ import {
   importInspections,
 } from "../db/hiveDb.js";
 import { downloadBackup, readBackupFile } from "../utils/backup.js";
+import {
+  maxId,
+  entriesSinceBackup as countSinceBackup,
+  watermarkFromLegacyCount,
+  watermarkAfterRestore,
+} from "../utils/backupReminder.js";
 
 // Small on-device checkpoint (not the log itself, just a nudge tracker) for
-// reminding beekeepers to back up every N new inspections. We store how
-// many entries existed at the last backup and diff against the live log
-// size - that way it's correct even for logs that already had entries
-// before this reminder existed, instead of counting forward from 0.
-const LAST_BACKUP_COUNT_KEY = "hive_last_backup_count";
+// reminding beekeepers to back up every N new inspections. We store the id
+// of the newest entry that was backed up (see utils/backupReminder.js).
+// The older key held "how many entries existed at the last backup"; it is
+// read once and converted so existing backup history isn't lost.
+const LAST_BACKUP_ID_KEY = "hive_last_backup_id";
+const LEGACY_BACKUP_COUNT_KEY = "hive_last_backup_count";
 const BACKUP_REMINDER_THRESHOLD = 10;
 
-function loadLastBackupCount() {
+// Returns the stored number, or null when the key is missing or unreadable.
+function readSavedNumber(key) {
   try {
-    const saved = Number(localStorage.getItem(LAST_BACKUP_COUNT_KEY));
-    return Number.isFinite(saved) && saved > 0 ? saved : 0;
+    const raw = localStorage.getItem(key);
+    if (raw === null) return null;
+    const n = Number(raw);
+    return Number.isFinite(n) && n >= 0 ? n : null;
   } catch {
-    return 0;
+    return null;
   }
 }
 
-function saveLastBackupCount(n) {
+function saveLastBackupId(n) {
   try {
-    localStorage.setItem(LAST_BACKUP_COUNT_KEY, String(n));
+    localStorage.setItem(LAST_BACKUP_ID_KEY, String(n));
   } catch {
     // ignore
   }
@@ -45,7 +57,9 @@ export default function useHiveLog() {
   const [loading, setLoading] = useState(true);
   const [justSaved, setJustSaved] = useState(false);
   const [importMessage, setImportMessage] = useState("");
-  const [lastBackupCount, setLastBackupCount] = useState(loadLastBackupCount);
+  const [lastBackupId, setLastBackupId] = useState(
+    () => readSavedNumber(LAST_BACKUP_ID_KEY) ?? 0,
+  );
   const [hiveIdError, setHiveIdError] = useState(false);
   const [missingFields, setMissingFields] = useState(null); // array of {key,label} or null
   const savedTimeoutRef = useRef(null);
@@ -56,7 +70,17 @@ export default function useHiveLog() {
     let cancelled = false;
     getAllInspections()
       .then((rows) => {
-        if (!cancelled) setLog(rows);
+        if (cancelled) return;
+        setLog(rows);
+        // One-off upgrade from the old "count at last backup" value.
+        if (readSavedNumber(LAST_BACKUP_ID_KEY) === null) {
+          const legacy = readSavedNumber(LEGACY_BACKUP_COUNT_KEY);
+          if (legacy) {
+            const id = watermarkFromLegacyCount(rows, legacy);
+            setLastBackupId(id);
+            saveLastBackupId(id);
+          }
+        }
       })
       .catch((err) => console.warn("Could not load inspections:", err))
       .finally(() => {
@@ -172,8 +196,8 @@ export default function useHiveLog() {
     try {
       await clearInspections();
       setLog([]);
-      setLastBackupCount(0);
-      saveLastBackupCount(0);
+      setLastBackupId(0);
+      saveLastBackupId(0);
     } catch (err) {
       console.warn("Could not clear log:", err);
       flashMessage("Couldn't clear the log. Please try again.");
@@ -182,7 +206,7 @@ export default function useHiveLog() {
 
   const exportAll = () => {
     if (log.length === 0) return;
-    const rows = log.map(omitId);
+    const rows = rowsForExport(log);
     const ws = XLSX.utils.json_to_sheet(rows);
     const keys = Object.keys(rows[0]);
     ws["!cols"] = keys.map((k) => ({
@@ -191,17 +215,15 @@ export default function useHiveLog() {
     }));
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Inspections");
-    XLSX.writeFile(
-      wb,
-      `hive_log_${new Date().toISOString().split("T")[0]}.xlsx`,
-    );
+    XLSX.writeFile(wb, `hive_log_${todayLocal()}.xlsx`);
   };
 
   const backupToFile = () => {
     if (log.length === 0) return;
     downloadBackup(log.map(omitId));
-    setLastBackupCount(log.length);
-    saveLastBackupCount(log.length);
+    const id = maxId(log);
+    setLastBackupId(id);
+    saveLastBackupId(id);
   };
 
   const restoreFromFile = async (file) => {
@@ -209,6 +231,11 @@ export default function useHiveLog() {
       const rows = await readBackupFile(file);
       const updated = await importInspections(rows);
       setLog(updated);
+      const id = watermarkAfterRestore(log, lastBackupId, updated);
+      if (id !== lastBackupId) {
+        setLastBackupId(id);
+        saveLastBackupId(id);
+      }
       flashMessage(
         `Imported ${rows.length} inspection${rows.length === 1 ? "" : "s"}.`,
       );
@@ -217,7 +244,7 @@ export default function useHiveLog() {
     }
   };
 
-  const entriesSinceBackup = Math.max(0, log.length - lastBackupCount);
+  const entriesSinceBackup = countSinceBackup(log, lastBackupId);
 
   return {
     form,

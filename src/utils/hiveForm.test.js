@@ -123,6 +123,18 @@ describe("formToRow", () => {
     );
   });
 
+  it("trims stray spaces from Hive ID, Yard # and New Hive ID", () => {
+    const row = formToRow({
+      ...initialForm(),
+      hiveId: "  H1 ",
+      yardNo: " Y2",
+      newHiveId: "H3  ",
+    });
+    expect(row["Hive ID"]).toBe("H1");
+    expect(row["Yard #"]).toBe("Y2");
+    expect(row["New Hive ID"]).toBe("H3");
+  });
+
   it("passes plain fields through unchanged", () => {
     const f = { ...initialForm(), hiveId: "H7", yardNo: "3", notes: "calm hive" };
     const row = formToRow(f);

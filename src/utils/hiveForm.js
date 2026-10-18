@@ -1,9 +1,10 @@
 // Shared form shape + row-mapping helpers for the Hive Logbook.
+import { todayLocal } from "./date.js";
 
 export const STORAGE_KEY = "hive_inspection_log";
 
 export const initialForm = () => ({
-  date: new Date().toISOString().split("T")[0],
+  date: todayLocal(),
   hiveId: "",
   yardNo: "",
   weatherTemp: "",
@@ -111,8 +112,9 @@ export function formToRow(f) {
 
   return {
     Date: f.date,
-    "Hive ID": f.hiveId,
-    "Yard #": f.yardNo,
+    // Trimmed so "H1 " and "H1" don't become two different hives in Excel.
+    "Hive ID": f.hiveId.trim(),
+    "Yard #": f.yardNo.trim(),
     "Temp (°C)": f.weatherTemp,
     Weather: f.weatherCondition,
     Temperament: f.temperament,
@@ -131,7 +133,7 @@ export function formToRow(f) {
     Additions: additions,
     "Storage Contents": f.removedToStorage ? storageItems : "",
     "New Apiary Location": f.movedApiary ? f.newApiaryLocation : "",
-    "New Hive ID": f.newHiveId,
+    "New Hive ID": f.newHiveId.trim(),
     "Adjusted Entrance": f.entrance,
     "Honey Level": f.honeyLevel,
     "Pollen Level": f.pollenLevel,
