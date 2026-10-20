@@ -1,6 +1,29 @@
 # Yardbook 🐝
 
+[![CI](https://github.com/mg20765/yardbook/actions/workflows/ci.yml/badge.svg)](https://github.com/mg20765/yardbook/actions/workflows/ci.yml)
+
 An offline-first hive inspection logbook for mobile and tablet. No signal needed, no account, no server — everything lives on the device it's used on. Built for beekeepers ranging from a 2-hive hobbyist to a 2,000-hive commercial operation.
+
+**Live app:** https://hive-logbook-maria.surge.sh (open it on a phone and use "Add to Home Screen").
+
+## Screenshots
+
+Sample data only; the hives shown are made up.
+
+| Inspection form | Inspection log |
+| --- | --- |
+| <img src="docs/screenshots/form.png" alt="The Yardbook inspection form on a phone, with Hive details, Weather and Condition cards" width="300"> | <img src="docs/screenshots/log.png" alt="The inspection log with three entries, the first expanded to show every recorded field" width="300"> |
+
+| Save check | Storage details |
+| --- | --- |
+| <img src="docs/screenshots/warning.png" alt="A prompt saying the Temperament field was left blank, with Go back and Add anyway buttons" width="300"> | <img src="docs/screenshots/storage.png" alt="The Additions card with Removed to storage ticked, showing box counts and gear checkboxes" width="300"> |
+
+## Highlights
+
+- **Works with no signal.** A service worker caches the app, and every entry is saved on the device.
+- **Doesn't lose your work.** A half-filled form is kept if the page reloads, deletes and "Clear log" ask first, and failed saves show an error instead of failing silently.
+- **Protects your data.** JSON backup and restore (with a reminder after 10 new entries), Excel export, and a request to the browser not to clear stored data when the phone runs low on space.
+- **Tested.** 70 unit tests (Vitest) and 23 end-to-end tests (Playwright) run on every push in GitHub Actions.
 
 ## Getting started
 
@@ -15,7 +38,7 @@ An offline-first hive inspection logbook for mobile and tablet. No signal needed
 
 ```bash
 # 1. Get the code
-git clone <your-repo-url> yardbook
+git clone https://github.com/mg20765/yardbook.git yardbook
 cd yardbook
 
 # 2. Install dependencies
@@ -83,8 +106,9 @@ All inspection data lives in **IndexedDB** (via the `idb` library), not localSto
 
 If you have old data from before this switch (saved under `localStorage["hive_inspection_log"]`), it gets migrated into IndexedDB automatically, once, the first time the app loads.
 
-Two small pieces of metadata live in localStorage (not the log itself, just nudge-tracking):
-- `hive_last_backup_count` — how many entries existed at your last JSON backup, used to compute the "N since backup" reminder.
+Two small pieces of data live in localStorage (not the log itself):
+- `hive_last_backup_id` — the id of the newest entry in your last JSON backup, used to work out the "N since backup" reminder. (Older versions stored a count in `hive_last_backup_count`; it is converted once automatically.)
+- `yardbook_form_draft` — the half-filled form, so it survives a page reload. It is removed when you save the entry or tap "Discard draft".
 
 ## Project structure
 
