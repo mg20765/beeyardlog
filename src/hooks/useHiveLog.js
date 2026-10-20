@@ -14,6 +14,7 @@ import {
 } from "../db/hiveDb.js";
 import { downloadBackup, readBackupFile } from "../utils/backup.js";
 import { loadDraft, saveDraft, clearDraft } from "../utils/draft.js";
+import { requestPersistentStorage } from "../utils/persist.js";
 import {
   maxId,
   entriesSinceBackup as countSinceBackup,
@@ -76,6 +77,8 @@ export default function useHiveLog() {
       .then((rows) => {
         if (cancelled) return;
         setLog(rows);
+        // Existing data is worth protecting as soon as the app opens.
+        if (rows.length > 0) requestPersistentStorage();
         // One-off upgrade from the old "count at last backup" value.
         if (readSavedNumber(LAST_BACKUP_ID_KEY) === null) {
           const legacy = readSavedNumber(LEGACY_BACKUP_COUNT_KEY);
@@ -144,6 +147,8 @@ export default function useHiveLog() {
       setDraftRestored(false);
       setMissingFields(null);
       flashSaved();
+      // The first saved entry is the moment there is something to protect.
+      requestPersistentStorage();
       window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
     } catch (err) {
       console.warn("Could not save inspection:", err);
