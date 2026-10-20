@@ -13,6 +13,7 @@ import {
   importInspections,
 } from "../db/hiveDb.js";
 import { downloadBackup, readBackupFile } from "../utils/backup.js";
+import { loadDraft, saveDraft, clearDraft } from "../utils/draft.js";
 import {
   maxId,
   entriesSinceBackup as countSinceBackup,
@@ -52,7 +53,10 @@ function saveLastBackupId(n) {
 // Owns the inspection form state, the saved log (backed by IndexedDB via
 // idb), and the add/delete/clear/export/backup actions used by the app.
 export default function useHiveLog() {
-  const [form, setForm] = useState(initialForm());
+  // A half-filled form saved before the page reloaded (see utils/draft.js).
+  const [savedDraft] = useState(() => loadDraft());
+  const [form, setForm] = useState(() => savedDraft ?? initialForm());
+  const [draftRestored, setDraftRestored] = useState(savedDraft !== null);
   const [log, setLog] = useState([]);
   const [loading, setLoading] = useState(true);
   const [justSaved, setJustSaved] = useState(false);
@@ -90,6 +94,12 @@ export default function useHiveLog() {
       cancelled = true;
     };
   }, []);
+
+  // Keep the draft in step with the form on every change. A blank form (for
+  // example right after saving an entry) removes the draft.
+  useEffect(() => {
+    saveDraft(form);
+  }, [form]);
 
   useEffect(
     () => () => {
@@ -131,6 +141,7 @@ export default function useHiveLog() {
       const saved = await addInspection(formToRow(form));
       setLog((prev) => [...prev, saved]);
       setForm(initialForm());
+      setDraftRestored(false);
       setMissingFields(null);
       flashSaved();
       window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
@@ -180,6 +191,14 @@ export default function useHiveLog() {
       const el = document.getElementById(`hive-field-${first.key}`);
       if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
     }
+  };
+
+  const discardDraft = () => {
+    setForm(initialForm());
+    setDraftRestored(false);
+    setHiveIdError(false);
+    setMissingFields(null);
+    clearDraft();
   };
 
   const deleteEntry = async (id) => {
@@ -262,6 +281,8 @@ export default function useHiveLog() {
     addToLog,
     confirmAddAnyway,
     dismissMissingFields,
+    draftRestored,
+    discardDraft,
     deleteEntry,
     clearLog,
     exportAll,

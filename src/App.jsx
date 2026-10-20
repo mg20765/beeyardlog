@@ -12,6 +12,7 @@ import NotesSection from "./components/NotesSection.jsx";
 import InspectionLog from "./components/InspectionLog.jsx";
 import ActionButtons from "./components/ActionButtons.jsx";
 import BackupReminder from "./components/BackupReminder.jsx";
+import DraftNotice from "./components/DraftNotice.jsx";
 import MissingFieldsWarning from "./components/MissingFieldsWarning.jsx";
 import useHiveLog from "./hooks/useHiveLog.js";
 
@@ -31,6 +32,8 @@ export default function HiveLogbook() {
     addToLog,
     confirmAddAnyway,
     dismissMissingFields,
+    draftRestored,
+    discardDraft,
     deleteEntry,
     clearLog,
     exportAll,
@@ -41,6 +44,8 @@ export default function HiveLogbook() {
   return (
     <div className="hive-app">
       <Header justSaved={justSaved} />
+
+      <DraftNotice visible={draftRestored} onDiscard={discardDraft} />
 
       <HiveDetailsSection form={form} set={set} hiveIdError={hiveIdError} />
       <WeatherSection form={form} set={set} />
