@@ -4,8 +4,8 @@
 // files that index.html points at). After that, pages are served network
 // first (so a new deploy shows up) and fall back to the cache offline;
 // everything else is served cache first. Bump CACHE to force a refresh.
-const CACHE = "yardbook-v2";
-const SHELL = ["/", "/index.html", "/manifest.json", "/bee.png"];
+const CACHE = "yardbook-v3";
+const SHELL = ["/", "/index.html", "/manifest.json"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

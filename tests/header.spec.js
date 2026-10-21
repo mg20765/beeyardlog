@@ -1,13 +1,11 @@
 import { test, expect } from "@playwright/test";
 
-test("header shows the Yardbook title with the bee image loaded", async ({ page }) => {
+test("header shows the bee emoji next to the Yardbook title", async ({ page }) => {
   await page.goto("/");
 
-  await expect(page.getByRole("heading", { name: "Yardbook" })).toBeVisible();
-
-  const bee = page.locator(".hive-header__bee");
-  await expect(bee).toBeVisible();
-  // A broken image is "visible" but has no pixels, so check it really loaded.
-  const loaded = await bee.evaluate((img) => img.complete && img.naturalWidth > 0);
-  expect(loaded).toBe(true);
+  const title = page.getByRole("heading", { name: /Yardbook/ });
+  await expect(title).toBeVisible();
+  await expect(title).toContainText("🐝");
+  // The emoji replaced the drawn bee image, so no image should be in the header.
+  await expect(page.locator(".hive-header img")).toHaveCount(0);
 });
