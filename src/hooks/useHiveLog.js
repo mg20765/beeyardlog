@@ -4,7 +4,11 @@ import { initialForm, formToRow } from "../utils/hiveForm.js";
 import { omitId } from "../utils/omitId.js";
 import { rowsForExport } from "../utils/exportRows.js";
 import { todayLocal } from "../utils/date.js";
-import { isHiveIdMissing, getMissingNudgeFields } from "../utils/validation.js";
+import {
+  isHiveIdMissing,
+  getMissingNudgeFields,
+  getInputProblems,
+} from "../utils/validation.js";
 import {
   getAllInspections,
   addInspection,
@@ -66,6 +70,7 @@ export default function useHiveLog() {
     () => readSavedNumber(LAST_BACKUP_ID_KEY) ?? 0,
   );
   const [hiveIdError, setHiveIdError] = useState(false);
+  const [inputProblems, setInputProblems] = useState(null); // array of messages or null
   const [missingFields, setMissingFields] = useState(null); // array of {key,label} or null
   const savedTimeoutRef = useRef(null);
   const messageTimeoutRef = useRef(null);
@@ -126,14 +131,17 @@ export default function useHiveLog() {
 
   const set = (key) => (e) => {
     if (key === "hiveId") setHiveIdError(false);
+    setInputProblems(null);
     setForm((f) => ({
       ...f,
       [key]: e && e.target !== undefined ? e.target.value : e,
     }));
   };
 
-  const setCheck = (key) => (e) =>
+  const setCheck = (key) => (e) => {
+    setInputProblems(null);
     setForm((f) => ({ ...f, [key]: e.target.checked }));
+  };
 
   // The ref (not state) guards against a double-tap: state updates are
   // async, so two quick taps would both see "not saving" and add twice.
@@ -166,12 +174,23 @@ export default function useHiveLog() {
     return false;
   };
 
+  // Values that are clearly wrong (a brood coverage of 150, a cleared date)
+  // are stopped at save, with a list of what to fix.
+  const passesInputChecks = () => {
+    const problems = getInputProblems(form);
+    if (problems.length === 0) return true;
+    setMissingFields(null);
+    setInputProblems(problems);
+    return false;
+  };
+
   // Called by the "+ Add to log" button. Blocks on a missing Hive ID
   // (an entry with no ID isn't useful data), and surfaces a dismissible
   // warning for the handful of other fields worth double-checking before
   // saving, rather than only noticing they're blank later in Excel.
   const addToLog = async () => {
     if (!requireHiveId()) return;
+    if (!passesInputChecks()) return;
     const missing = getMissingNudgeFields(form);
     if (missing.length > 0) {
       setMissingFields(missing);
@@ -184,6 +203,7 @@ export default function useHiveLog() {
   // the hard requirement is checked again here.
   const confirmAddAnyway = async () => {
     if (!requireHiveId()) return;
+    if (!passesInputChecks()) return;
     await commitAddToLog();
   };
 
@@ -202,6 +222,7 @@ export default function useHiveLog() {
     setForm(initialForm());
     setDraftRestored(false);
     setHiveIdError(false);
+    setInputProblems(null);
     setMissingFields(null);
     clearDraft();
   };
@@ -278,6 +299,7 @@ export default function useHiveLog() {
     importMessage,
     hiveIdError,
     missingFields,
+    inputProblems,
     needsBackupReminder:
       !loading && entriesSinceBackup >= BACKUP_REMINDER_THRESHOLD,
     entriesSinceBackup,

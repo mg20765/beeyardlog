@@ -15,6 +15,7 @@ import ActionButtons from "./components/ActionButtons.jsx";
 import BackupReminder from "./components/BackupReminder.jsx";
 import DraftNotice from "./components/DraftNotice.jsx";
 import MissingFieldsWarning from "./components/MissingFieldsWarning.jsx";
+import InputProblems from "./components/InputProblems.jsx";
 import useHiveLog from "./hooks/useHiveLog.js";
 
 export default function HiveLogbook() {
@@ -26,6 +27,7 @@ export default function HiveLogbook() {
     importMessage,
     hiveIdError,
     missingFields,
+    inputProblems,
     needsBackupReminder,
     entriesSinceBackup,
     set,
@@ -58,6 +60,8 @@ export default function HiveLogbook() {
       <FoodStoresSection form={form} set={set} />
       <ExtractionSection form={form} set={set} />
       <NotesSection form={form} set={set} />
+
+      <InputProblems problems={inputProblems} />
 
       <MissingFieldsWarning
         fields={missingFields}

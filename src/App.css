@@ -498,3 +498,23 @@
 .hive-mite-off {
   opacity: 0.45;
 }
+
+/* Values that must be fixed before an entry can be saved */
+.hive-problems {
+  margin: 12px 0;
+  padding: 10px 12px;
+  background: #fdecea;
+  border: 1px solid #f3c1bb;
+  border-radius: 10px;
+  color: #8a2b20;
+  font-size: 13px;
+}
+
+.hive-problems p {
+  margin: 0 0 4px;
+}
+
+.hive-problems ul {
+  margin: 0;
+  padding-left: 18px;
+}

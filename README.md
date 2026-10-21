@@ -24,7 +24,7 @@ Sample data only; the hives shown are made up.
 - **Doesn't lose your work.** A half-filled form is kept if the page reloads, deletes and "Clear log" ask first, and failed saves show an error instead of failing silently.
 - **Mite check.** Record an alcohol wash or sugar roll and get mites per 100 bees, with a clear hint when a count reaches the treatment threshold.
 - **Protects your data.** JSON backup and restore (with a reminder after 10 new entries), Excel export, and a request to the browser not to clear stored data when the phone runs low on space.
-- **Tested.** 84 unit tests (Vitest) and 33 end-to-end tests (Playwright) run on every push in GitHub Actions.
+- **Tested.** 100 unit tests (Vitest) and 40 end-to-end tests (Playwright) run on every push in GitHub Actions.
 
 ## How to use it
 
@@ -196,3 +196,16 @@ src/
 
 - Switching the storage layer to Dexie.js instead of `idb`, for built-in filtering/search (e.g. "show me hive H23's history"). Not needed yet since even 20,000+ rows filter fast enough in plain JS at this app's scale — worth revisiting if a search/filter UI gets requested.
 - Voice/spoken reminders for hands-busy moments (gloves on, mid-inspection). Skipped for the backup reminder specifically since that's a post-inspection nudge, not needed mid-task — but a real option if a "confirm save" voice prompt is ever wanted while hands are full.
+
+## A note on dependencies
+
+`npm audit` reports two known issues in the `xlsx` (SheetJS) package, which BeeYardLog uses for **Export all to Excel**:
+
+- a prototype-pollution issue ([GHSA-4r6h-8v6p-xvw6](https://github.com/advisories/GHSA-4r6h-8v6p-xvw6)), which the advisory says affects **reading** crafted spreadsheet files and not export-only use;
+- a regular-expression denial-of-service issue ([GHSA-5pgg-2g8v-p4x9](https://github.com/advisories/GHSA-5pgg-2g8v-p4x9)).
+
+BeeYardLog only **creates** spreadsheets from your own data. It never opens or parses one (Restore uses JSON backups), so these issues don't apply to how it uses the library. The fixed versions are published only on SheetJS's own site, not on npm, so `npm audit` can't offer an upgrade. Moving to the SheetJS-hosted build is on the to-do list.
+
+## Licence
+
+BeeYardLog is released under the [MIT Licence](LICENSE). You're welcome to use it, learn from it and build on it; please keep the copyright notice.

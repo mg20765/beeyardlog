@@ -4,6 +4,10 @@ on:
   push:
   pull_request:
 
+# The build only needs to read the code, so it gets no more than that.
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest

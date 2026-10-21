@@ -25,3 +25,60 @@ export function getMissingNudgeFields(form) {
     label,
   }));
 }
+
+// Optional number fields that must make sense when they are filled in:
+// [key, label, min, max, wholeNumber]. They are stopped at save, because a
+// brood coverage of 150 or a negative frame count is a slip, not a record.
+const NUMBER_RULES = [
+  ["weatherTemp", "Temp (°C)", -30, 50, false],
+  ["broodPct", "Brood coverage %", 0, 100, false],
+  ["broodFrames", "Brood frames", 0, Infinity, true],
+  ["supersRemoved", "Supers removed", 0, Infinity, true],
+  ["honeyKg", "Honey (kg)", 0, Infinity, false],
+];
+
+// Only relevant (and only saved) when "Removed to storage" is ticked.
+const STORAGE_RULES = [
+  ["storageFdBoxes", "FD boxes", 0, Infinity, true],
+  ["storageThreeQuarterBoxes", "3/4 boxes", 0, Infinity, true],
+];
+
+function numberProblem(form, [key, label, min, max, whole]) {
+  const raw = form[key];
+  if (raw === "" || raw === undefined || raw === null) return null;
+  const n = Number(raw);
+  if (!Number.isFinite(n)) return `${label} must be a number.`;
+  if (whole && !Number.isInteger(n)) return `${label} must be a whole number.`;
+  if (n < min || n > max) {
+    return max === Infinity
+      ? `${label} can't be negative.`
+      : `${label} must be between ${min} and ${max}.`;
+  }
+  return null;
+}
+
+// Returns a plain-language message for everything that stops an entry being
+// saved, other than the Hive ID (checked separately). Empty list = fine.
+export function getInputProblems(form) {
+  const problems = [];
+  if (!form.date) problems.push("Date is required.");
+
+  const rules = form.removedToStorage ? [...NUMBER_RULES, ...STORAGE_RULES] : NUMBER_RULES;
+  for (const rule of rules) {
+    const problem = numberProblem(form, rule);
+    if (problem) problems.push(problem);
+  }
+
+  if (!form.miteNotDone) {
+    const bees = form.miteBees;
+    const mites = form.miteCount;
+    const beesOk = bees === "" || (Number.isInteger(Number(bees)) && Number(bees) >= 1);
+    const mitesOk = mites === "" || (Number.isInteger(Number(mites)) && Number(mites) >= 0);
+    if (!beesOk) problems.push("Bees sampled must be a whole number, 1 or more.");
+    if (!mitesOk) problems.push("Mites counted must be a whole number, 0 or more.");
+    if (bees !== "" && mites !== "" && beesOk && mitesOk && Number(mites) > Number(bees)) {
+      problems.push("Mites counted can't be more than bees sampled.");
+    }
+  }
+  return problems;
+}

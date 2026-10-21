@@ -121,3 +121,35 @@ describe("saveDraft", () => {
     expect(() => saveDraft(initialForm(), broken)).not.toThrow();
   });
 });
+
+describe("loadDraft: a draft carried over to another day", () => {
+  const saveOn = (day, form) => {
+    const s = fakeStorage();
+    saveDraft(form, s, day);
+    return s;
+  };
+
+  it("moves the date to today when the draft was only using the day's default", () => {
+    const s = saveOn("2026-10-19", { ...initialForm(), date: "2026-10-19", hiveId: "H1" });
+    const form = loadDraft(s, "2026-10-21");
+    expect(form.hiveId).toBe("H1");
+    expect(form.date).toBe("2026-10-21");
+  });
+
+  it("keeps a date the person chose on purpose", () => {
+    const s = saveOn("2026-10-19", { ...initialForm(), date: "2026-10-15", hiveId: "H1" });
+    expect(loadDraft(s, "2026-10-21").date).toBe("2026-10-15");
+  });
+
+  it("leaves the date alone when restored the same day", () => {
+    const s = saveOn("2026-10-21", { ...initialForm(), date: "2026-10-21", hiveId: "H1" });
+    expect(loadDraft(s, "2026-10-21").date).toBe("2026-10-21");
+  });
+
+  it("leaves the date alone for drafts saved before this was tracked", () => {
+    const s = fakeStorage({
+      [DRAFT_KEY]: JSON.stringify({ hiveId: "H1", date: "2026-10-19" }),
+    });
+    expect(loadDraft(s, "2026-10-21").date).toBe("2026-10-19");
+  });
+});
