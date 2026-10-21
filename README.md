@@ -26,6 +26,37 @@ Sample data only; the hives shown are made up.
 - **Protects your data.** JSON backup and restore (with a reminder after 10 new entries), Excel export, and a request to the browser not to clear stored data when the phone runs low on space.
 - **Tested.** 84 unit tests (Vitest) and 33 end-to-end tests (Playwright) run on every push in GitHub Actions.
 
+## How to use it
+
+### Put it on your phone
+
+1. Open https://hive-logbook-maria.surge.sh once **with signal**.
+2. **iPhone (Safari):** tap Share, then **Add to Home Screen**. **Android (Chrome):** tap the ⋮ menu, then **Add to Home screen** or **Install app**.
+3. Open it from the new icon. From now on it works with **no signal**.
+
+### Log an inspection
+
+1. Type a **Hive ID**. It's the only required field. Everything else is optional.
+2. Fill in whatever you checked: weather, condition, mite check, treatments (including the AFB check), feeding, additions, food stores, extraction and notes.
+3. Tap **+ Add to log**. If Temperament, Population, Queen sighted or Honey level are blank, you're asked once: **Go back** takes you to the first blank field, **Add anyway** saves it.
+4. The entry appears in the **Inspection log** at the bottom. Tap it to see every field, or tap ✕ to delete it (you're asked to confirm).
+
+If your phone reloads the page halfway through (a phone call, switching apps), your half-filled form comes back with a note. Tap **Discard draft** to start fresh.
+
+### Mite check
+
+Choose **Alcohol wash** or **Sugar roll**, enter the **bees sampled** (for example 300) and the **mites counted**. The app works out **mites per 100 bees** and shows a green note below the threshold, or a red "consider treating" note at or above **3 per 100**. That line is a reminder built into the app, not advice: use your own judgement and local guidance. If you didn't do a check, tick **Not done this visit**, so the log records that it was skipped rather than forgotten.
+
+### Look after your data
+
+Everything is stored **on your phone only**. There is no account and no server, so nobody else can see it, and nobody can recover it for you.
+
+- **Backup (JSON)** saves a file with your whole log. Send it somewhere off the phone (email or cloud storage). A backup that stays on the phone is lost with the phone.
+- **Restore backup** adds the entries in a backup file to the app. It never overwrites what's there, so don't restore the same file twice or you'll get duplicates.
+- **Export all to Excel** makes a spreadsheet you can open on a computer.
+- A banner reminds you to back up after 10 new entries.
+- Clearing your browser data, using a different browser, or switching phones starts you with an empty log, so restore from a backup if you do.
+
 ## Getting started
 
 ### Prerequisites
