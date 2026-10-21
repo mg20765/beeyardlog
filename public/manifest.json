@@ -1,6 +1,6 @@
 {
-  "name": "Yardbook",
-  "short_name": "Yardbook",
+  "name": "BeeYardLog",
+  "short_name": "BeeYardLog",
   "description": "Offline hive inspection logbook — works with no signal, saves to the device.",
   "start_url": "/",
   "display": "standalone",

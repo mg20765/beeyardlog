@@ -4,6 +4,8 @@
 // Storage is passed in so the logic can be unit tested without a browser.
 import { initialForm } from "./hiveForm.js";
 
+// The key keeps the app's earlier name on purpose: it is where saved drafts
+// already live on people's phones, so renaming it would orphan them.
 export const DRAFT_KEY = "yardbook_form_draft";
 
 // True when nothing has been typed or ticked. The date is ignored because it

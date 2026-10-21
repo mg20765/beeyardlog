@@ -19,19 +19,19 @@ describe("readBackupFile", () => {
 
   it("rejects text that isn't JSON with a friendly message", async () => {
     await expect(readBackupFile(fileOf("not json at all"))).rejects.toThrow(
-      /doesn't look like a Yardbook backup/,
+      /doesn't look like a BeeYardLog backup/,
     );
   });
 
   it("rejects JSON null instead of crashing", async () => {
     await expect(readBackupFile(fileOf("null"))).rejects.toThrow(
-      /doesn't look like a Yardbook backup/,
+      /doesn't look like a BeeYardLog backup/,
     );
   });
 
   it("rejects an object with no inspections list", async () => {
     await expect(readBackupFile(fileOf('{"hello":1}'))).rejects.toThrow(
-      /doesn't look like a Yardbook backup/,
+      /doesn't look like a BeeYardLog backup/,
     );
   });
 

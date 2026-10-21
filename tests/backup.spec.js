@@ -51,7 +51,7 @@ test("restoring a file that isn't a backup shows a message and changes nothing",
   });
 
   await expect(
-    page.getByText("doesn't look like a Yardbook backup"),
+    page.getByText("doesn't look like a BeeYardLog backup"),
   ).toBeVisible();
   await expect(page.locator(".hive-count-badge")).toHaveText("1");
 });

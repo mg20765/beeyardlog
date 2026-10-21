@@ -1,6 +1,6 @@
-# Yardbook 🐝
+# BeeYardLog 🐝
 
-[![CI](https://github.com/mg20765/yardbook/actions/workflows/ci.yml/badge.svg)](https://github.com/mg20765/yardbook/actions/workflows/ci.yml)
+[![CI](https://github.com/mg20765/beeyardlog/actions/workflows/ci.yml/badge.svg)](https://github.com/mg20765/beeyardlog/actions/workflows/ci.yml)
 
 An offline-first hive inspection logbook for mobile and tablet. No signal needed, no account, no server — everything lives on the device it's used on. Built for beekeepers ranging from a 2-hive hobbyist to a 2,000-hive commercial operation.
 
@@ -12,7 +12,7 @@ Sample data only; the hives shown are made up.
 
 | Inspection form | Inspection log |
 | --- | --- |
-| <img src="docs/screenshots/form.png" alt="The Yardbook inspection form on a phone, with Hive details, Weather and Condition cards" width="300"> | <img src="docs/screenshots/log.png" alt="The inspection log with three entries, the first expanded to show every recorded field" width="300"> |
+| <img src="docs/screenshots/form.png" alt="The BeeYardLog inspection form on a phone, with Hive details, Weather and Condition cards" width="300"> | <img src="docs/screenshots/log.png" alt="The inspection log with three entries, the first expanded to show every recorded field" width="300"> |
 
 | Save check | Storage details |
 | --- | --- |
@@ -22,8 +22,9 @@ Sample data only; the hives shown are made up.
 
 - **Works with no signal.** A service worker caches the app, and every entry is saved on the device.
 - **Doesn't lose your work.** A half-filled form is kept if the page reloads, deletes and "Clear log" ask first, and failed saves show an error instead of failing silently.
+- **Mite check.** Record an alcohol wash or sugar roll and get mites per 100 bees, with a clear hint when a count reaches the treatment threshold.
 - **Protects your data.** JSON backup and restore (with a reminder after 10 new entries), Excel export, and a request to the browser not to clear stored data when the phone runs low on space.
-- **Tested.** 70 unit tests (Vitest) and 23 end-to-end tests (Playwright) run on every push in GitHub Actions.
+- **Tested.** 82 unit tests (Vitest) and 30 end-to-end tests (Playwright) run on every push in GitHub Actions.
 
 ## Getting started
 
@@ -38,8 +39,8 @@ Sample data only; the hives shown are made up.
 
 ```bash
 # 1. Get the code
-git clone https://github.com/mg20765/yardbook.git yardbook
-cd yardbook
+git clone https://github.com/mg20765/beeyardlog.git beeyardlog
+cd beeyardlog
 
 # 2. Install dependencies
 npm install
@@ -55,7 +56,7 @@ Vite prints a local URL (usually `http://localhost:5173`). Open it and the app i
 
 ### Environment variables
 
-Yardbook needs **none** to run: it is offline-first and has no backend. `.env.example` is there as a template and documents the convention (variables must start with `VITE_`, and are public in the browser, so never put secrets in them). `.env` is git-ignored; `.env.example` is committed.
+BeeYardLog needs **none** to run: it is offline-first and has no backend. `.env.example` is there as a template and documents the convention (variables must start with `VITE_`, and are public in the browser, so never put secrets in them). `.env` is git-ignored; `.env.example` is committed.
 
 ### Scripts
 

@@ -1,4 +1,4 @@
-"""Generate Yardbook app icons.
+"""Generate BeeYardLog app icons.
 Usage:  python make_icons.py [path/to/your-square-image.png]
 No argument = simple placeholder (green tile, hexagon, YB).
 With an image: it is fitted inside the maskable safe zone (centre 70%) on the green tile,

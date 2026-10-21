@@ -1,10 +1,10 @@
-// Yardbook service worker: makes the app load with no signal.
+// BeeYardLog service worker: makes the app load with no signal.
 //
 // On install it caches the app shell (index.html plus the hashed JS/CSS
 // files that index.html points at). After that, pages are served network
 // first (so a new deploy shows up) and fall back to the cache offline;
 // everything else is served cache first. Bump CACHE to force a refresh.
-const CACHE = "yardbook-v3";
+const CACHE = "beeyardlog-v4";
 const SHELL = ["/", "/index.html", "/manifest.json"];
 
 self.addEventListener("install", (event) => {

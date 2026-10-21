@@ -27,7 +27,7 @@ export function downloadBackup(log) {
 // Reads a backup File, returns the array of inspection rows it contains.
 // Accepts either the { inspections: [...] } wrapper this app writes, or a
 // bare array, so a plain exported array still imports fine.
-const NOT_A_BACKUP = "That file doesn't look like a Yardbook backup.";
+const NOT_A_BACKUP = "That file doesn't look like a BeeYardLog backup.";
 
 const isPlainRow = (r) => r !== null && typeof r === "object" && !Array.isArray(r);
 
