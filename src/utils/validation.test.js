@@ -50,6 +50,8 @@ import { getInputProblems } from "./validation.js";
 
 describe("getInputProblems", () => {
   const form = (over) => ({ ...initialForm(), hiveId: "H1", ...over });
+  const messagesFor = (over) => getInputProblems(form(over)).map((p) => p.message);
+  const fieldsFor = (over) => getInputProblems(form(over)).map((p) => p.field);
 
   it("finds nothing wrong with a normal or empty entry", () => {
     expect(getInputProblems(form({}))).toEqual([]);
@@ -60,52 +62,68 @@ describe("getInputProblems", () => {
     ).toEqual([]);
   });
 
-  it("requires a date", () => {
-    expect(getInputProblems(form({ date: "" }))).toEqual(["Date is required."]);
+  it("requires a date, and says which field it is", () => {
+    expect(getInputProblems(form({ date: "" }))).toEqual([
+      { field: "date", message: "Date is required." },
+    ]);
+  });
+
+  it("names the field each problem belongs to, so the screen can jump to it", () => {
+    expect(fieldsFor({ broodPct: "150" })).toEqual(["broodPct"]);
+    expect(fieldsFor({ broodFrames: "-1" })).toEqual(["broodFrames"]);
+    expect(fieldsFor({ supersRemoved: "2.5" })).toEqual(["supersRemoved"]);
+    expect(fieldsFor({ honeyKg: "-3" })).toEqual(["honeyKg"]);
+    expect(fieldsFor({ weatherTemp: "180" })).toEqual(["weatherTemp"]);
+    expect(fieldsFor({ removedToStorage: true, storageFdBoxes: "-1" })).toEqual(["storageFdBoxes"]);
+    expect(fieldsFor({ miteBees: "0" })).toEqual(["miteBees"]);
+    expect(fieldsFor({ miteBees: "10", miteCount: "50" })).toEqual(["miteCount"]);
+  });
+
+  it("lists problems in the order the fields appear on the form", () => {
+    expect(fieldsFor({ honeyKg: "-1", date: "", broodPct: "150" })).toEqual([
+      "date",
+      "broodPct",
+      "honeyKg",
+    ]);
   });
 
   it("keeps brood coverage between 0 and 100", () => {
-    expect(getInputProblems(form({ broodPct: "150" }))[0]).toMatch(/Brood coverage %.*between 0 and 100/);
-    expect(getInputProblems(form({ broodPct: "-5" }))[0]).toMatch(/Brood coverage %/);
-    expect(getInputProblems(form({ broodPct: "0" }))).toEqual([]);
-    expect(getInputProblems(form({ broodPct: "100" }))).toEqual([]);
+    expect(messagesFor({ broodPct: "150" })[0]).toMatch(/Brood coverage %.*between 0 and 100/);
+    expect(messagesFor({ broodPct: "-5" })[0]).toMatch(/Brood coverage %/);
+    expect(messagesFor({ broodPct: "0" })).toEqual([]);
+    expect(messagesFor({ broodPct: "100" })).toEqual([]);
   });
 
   it("doesn't allow negative counts, and wants whole numbers for counts", () => {
-    expect(getInputProblems(form({ broodFrames: "-1" }))[0]).toMatch(/Brood frames.*negative/);
-    expect(getInputProblems(form({ supersRemoved: "2.5" }))[0]).toMatch(/Supers removed.*whole number/);
-    expect(getInputProblems(form({ honeyKg: "-3" }))[0]).toMatch(/Honey \(kg\).*negative/);
-    expect(getInputProblems(form({ honeyKg: "3.4" }))).toEqual([]); // kg can have decimals
+    expect(messagesFor({ broodFrames: "-1" })[0]).toMatch(/Brood frames.*negative/);
+    expect(messagesFor({ supersRemoved: "2.5" })[0]).toMatch(/Supers removed.*whole number/);
+    expect(messagesFor({ honeyKg: "-3" })[0]).toMatch(/Honey \(kg\).*negative/);
+    expect(messagesFor({ honeyKg: "3.4" })).toEqual([]); // kg can have decimals
   });
 
   it("flags an implausible temperature", () => {
-    expect(getInputProblems(form({ weatherTemp: "180" }))[0]).toMatch(/Temp/);
-    expect(getInputProblems(form({ weatherTemp: "-2" }))).toEqual([]);
+    expect(messagesFor({ weatherTemp: "180" })[0]).toMatch(/Temp/);
+    expect(messagesFor({ weatherTemp: "-2" })).toEqual([]);
   });
 
   it("only checks the storage counts when 'Removed to storage' is ticked", () => {
-    expect(getInputProblems(form({ storageFdBoxes: "-1" }))).toEqual([]);
-    expect(
-      getInputProblems(form({ removedToStorage: true, storageFdBoxes: "-1" }))[0],
-    ).toMatch(/FD boxes/);
+    expect(messagesFor({ storageFdBoxes: "-1" })).toEqual([]);
+    expect(messagesFor({ removedToStorage: true, storageFdBoxes: "-1" })[0]).toMatch(/FD boxes/);
   });
 
   it("flags more mites than bees, and bad mite numbers", () => {
-    expect(getInputProblems(form({ miteBees: "10", miteCount: "50" }))).toEqual([
+    expect(messagesFor({ miteBees: "10", miteCount: "50" })).toEqual([
       "Mites counted can't be more than bees sampled.",
     ]);
-    expect(getInputProblems(form({ miteBees: "0", miteCount: "" }))[0]).toMatch(/Bees sampled/);
-    expect(getInputProblems(form({ miteBees: "300", miteCount: "9" }))).toEqual([]);
+    expect(messagesFor({ miteBees: "0", miteCount: "" })[0]).toMatch(/Bees sampled/);
+    expect(messagesFor({ miteBees: "300", miteCount: "9" })).toEqual([]);
   });
 
   it("ignores mite numbers when the check was marked not done", () => {
-    expect(
-      getInputProblems(form({ miteNotDone: true, miteBees: "10", miteCount: "50" })),
-    ).toEqual([]);
+    expect(messagesFor({ miteNotDone: true, miteBees: "10", miteCount: "50" })).toEqual([]);
   });
 
   it("lists every problem at once", () => {
-    const problems = getInputProblems(form({ date: "", broodPct: "150", broodFrames: "-2" }));
-    expect(problems).toHaveLength(3);
+    expect(messagesFor({ date: "", broodPct: "150", broodFrames: "-2" })).toHaveLength(3);
   });
 });

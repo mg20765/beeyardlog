@@ -1,4 +1,5 @@
 import RadioGroup from "./ui/RadioGroup.jsx";
+import FieldError from "./FieldError.jsx";
 
 const CONDITIONS = ["Sunny", "Cloudy", "Overcast", "Windy", "Rainy"];
 
@@ -10,11 +11,13 @@ export default function WeatherSection({ form, set }) {
         <label className="hive-label">Temp (°C)</label>
         <input
           className="hive-input"
+          id="field-weatherTemp"
           type="number"
           value={form.weatherTemp}
           onChange={set("weatherTemp")}
           placeholder="e.g. 18"
         />
+        <FieldError name="weatherTemp" />
       </div>
       <div>
         <label className="hive-label">Conditions</label>

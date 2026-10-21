@@ -1,3 +1,5 @@
+import FieldError from "./FieldError.jsx";
+
 export default function ExtractionSection({ form, set }) {
   return (
     <div className="hive-section">
@@ -9,10 +11,12 @@ export default function ExtractionSection({ form, set }) {
             className="hive-input"
             type="number"
             min="0"
+            id="field-supersRemoved"
             value={form.supersRemoved}
             onChange={set("supersRemoved")}
             placeholder="0"
           />
+          <FieldError name="supersRemoved" />
         </div>
         <div className="hive-field">
           <label className="hive-label">Honey (kg)</label>
@@ -21,10 +25,12 @@ export default function ExtractionSection({ form, set }) {
             type="number"
             min="0"
             step="0.1"
+            id="field-honeyKg"
             value={form.honeyKg}
             onChange={set("honeyKg")}
             placeholder="0.0"
           />
+          <FieldError name="honeyKg" />
         </div>
       </div>
     </div>

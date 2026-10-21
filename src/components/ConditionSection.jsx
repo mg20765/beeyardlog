@@ -1,4 +1,5 @@
 import RadioGroup from "./ui/RadioGroup.jsx";
+import FieldError from "./FieldError.jsx";
 
 export default function ConditionSection({ form, set }) {
   return (
@@ -21,10 +22,12 @@ export default function ConditionSection({ form, set }) {
             type="number"
             min="0"
             max="100"
+            id="field-broodPct"
             value={form.broodPct}
             onChange={set("broodPct")}
             placeholder="0–100"
           />
+          <FieldError name="broodPct" />
         </div>
         <div className="hive-field">
           <label className="hive-label">Frames</label>
@@ -32,10 +35,12 @@ export default function ConditionSection({ form, set }) {
             className="hive-input"
             type="number"
             min="0"
+            id="field-broodFrames"
             value={form.broodFrames}
             onChange={set("broodFrames")}
             placeholder="#"
           />
+          <FieldError name="broodFrames" />
         </div>
       </div>
       <div id="hive-field-population" style={{ marginBottom: 10 }}>

@@ -518,3 +518,21 @@
   margin: 0;
   padding-left: 18px;
 }
+
+/* A field with a problem: red border and background, matching the Hive ID error. */
+.hive-field:has(.hive-field-error) .hive-input {
+  border-color: #c0392b;
+  background: #fdecea;
+}
+
+/* Lines in the "Please check" box are buttons that jump to the field. */
+.hive-problem-link {
+  background: none;
+  border: 0;
+  padding: 2px 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  text-decoration: underline;
+  cursor: pointer;
+}

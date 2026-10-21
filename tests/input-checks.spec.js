@@ -62,3 +62,38 @@ test("'Add anyway' can't get a wrong value past the checks", async ({ page }) =>
   await expect(problems(page)).toContainText("Brood coverage %");
   await expect(page.getByText("No inspections logged yet")).toBeVisible();
 });
+
+test("saving with a wrong value jumps to that field, focuses it, and explains it right there", async ({ page }) => {
+  await page.getByPlaceholder("0–100").fill("150");
+  await addToLog(page);
+
+  const brood = page.locator("#field-broodPct");
+  await expect(brood).toBeInViewport();
+  await expect(brood).toBeFocused();
+  // The message sits in the same card as the field, not only in the summary box.
+  await expect(
+    page.locator(".hive-field", { has: brood }).locator(".hive-field-error"),
+  ).toContainText("between 0 and 100");
+});
+
+test("the inline message goes away once the value is fixed", async ({ page }) => {
+  await page.getByPlaceholder("0–100").fill("150");
+  await addToLog(page);
+  await expect(page.locator(".hive-field-error", { hasText: "between 0 and 100" })).toBeVisible();
+
+  await page.getByPlaceholder("0–100").fill("80");
+
+  await expect(page.locator(".hive-field-error", { hasText: "between 0 and 100" })).toHaveCount(0);
+});
+
+test("with several problems it jumps to the first, and each line in the box jumps to its own field", async ({ page }) => {
+  await page.locator('input[type="date"]').fill("");
+  await page.getByPlaceholder("0–100").fill("150");
+  await addToLog(page);
+
+  await expect(page.locator("#field-date")).toBeFocused(); // first on the form
+
+  await page.getByRole("button", { name: /Brood coverage %/ }).click();
+  await expect(page.locator("#field-broodPct")).toBeInViewport();
+  await expect(page.locator("#field-broodPct")).toBeFocused();
+});

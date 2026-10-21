@@ -43,6 +43,21 @@ const STORAGE_RULES = [
   ["storageThreeQuarterBoxes", "3/4 boxes", 0, Infinity, true],
 ];
 
+// The order the fields appear on the form, top to bottom, so the first
+// problem listed is also the first one you reach.
+const FIELD_ORDER = [
+  "date",
+  "weatherTemp",
+  "broodPct",
+  "broodFrames",
+  "miteBees",
+  "miteCount",
+  "storageFdBoxes",
+  "storageThreeQuarterBoxes",
+  "supersRemoved",
+  "honeyKg",
+];
+
 function numberProblem(form, [key, label, min, max, whole]) {
   const raw = form[key];
   if (raw === "" || raw === undefined || raw === null) return null;
@@ -57,16 +72,17 @@ function numberProblem(form, [key, label, min, max, whole]) {
   return null;
 }
 
-// Returns a plain-language message for everything that stops an entry being
-// saved, other than the Hive ID (checked separately). Empty list = fine.
+// Returns [{ field, message }] for everything that stops an entry being
+// saved, other than the Hive ID (checked separately). `field` is the form key,
+// so the screen can jump to it. Empty list = fine.
 export function getInputProblems(form) {
   const problems = [];
-  if (!form.date) problems.push("Date is required.");
+  if (!form.date) problems.push({ field: "date", message: "Date is required." });
 
   const rules = form.removedToStorage ? [...NUMBER_RULES, ...STORAGE_RULES] : NUMBER_RULES;
   for (const rule of rules) {
-    const problem = numberProblem(form, rule);
-    if (problem) problems.push(problem);
+    const message = numberProblem(form, rule);
+    if (message) problems.push({ field: rule[0], message });
   }
 
   if (!form.miteNotDone) {
@@ -74,11 +90,15 @@ export function getInputProblems(form) {
     const mites = form.miteCount;
     const beesOk = bees === "" || (Number.isInteger(Number(bees)) && Number(bees) >= 1);
     const mitesOk = mites === "" || (Number.isInteger(Number(mites)) && Number(mites) >= 0);
-    if (!beesOk) problems.push("Bees sampled must be a whole number, 1 or more.");
-    if (!mitesOk) problems.push("Mites counted must be a whole number, 0 or more.");
+    if (!beesOk) {
+      problems.push({ field: "miteBees", message: "Bees sampled must be a whole number, 1 or more." });
+    }
+    if (!mitesOk) {
+      problems.push({ field: "miteCount", message: "Mites counted must be a whole number, 0 or more." });
+    }
     if (bees !== "" && mites !== "" && beesOk && mitesOk && Number(mites) > Number(bees)) {
-      problems.push("Mites counted can't be more than bees sampled.");
+      problems.push({ field: "miteCount", message: "Mites counted can't be more than bees sampled." });
     }
   }
-  return problems;
+  return problems.sort((a, b) => FIELD_ORDER.indexOf(a.field) - FIELD_ORDER.indexOf(b.field));
 }

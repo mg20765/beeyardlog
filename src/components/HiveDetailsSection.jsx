@@ -1,3 +1,5 @@
+import FieldError from "./FieldError.jsx";
+
 export default function HiveDetailsSection({ form, set, hiveIdError }) {
   return (
     <div className="hive-section">
@@ -29,10 +31,12 @@ export default function HiveDetailsSection({ form, set, hiveIdError }) {
         <label className="hive-label">Date</label>
         <input
           className="hive-input"
+          id="field-date"
           type="date"
           value={form.date}
           onChange={set("date")}
         />
+        <FieldError name="date" />
       </div>
     </div>
   );

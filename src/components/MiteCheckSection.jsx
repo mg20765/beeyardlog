@@ -47,6 +47,7 @@ export default function MiteCheckSection({ form, set, setCheck }) {
               type="number"
               min="1"
               inputMode="numeric"
+              id="field-miteBees"
               value={form.miteBees}
               onChange={set("miteBees")}
               placeholder="e.g. 300"
@@ -60,6 +61,7 @@ export default function MiteCheckSection({ form, set, setCheck }) {
               type="number"
               min="0"
               inputMode="numeric"
+              id="field-miteCount"
               value={form.miteCount}
               onChange={set("miteCount")}
               placeholder="e.g. 5"

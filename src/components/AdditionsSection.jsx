@@ -1,4 +1,5 @@
 import RadioGroup from "./ui/RadioGroup.jsx";
+import FieldError from "./FieldError.jsx";
 
 const ADDITIONS = [
   ["addBoxes", "Boxes added"],
@@ -48,10 +49,12 @@ export default function AdditionsSection({ form, set, setCheck }) {
                 className="hive-input"
                 type="number"
                 min="0"
+                id="field-storageFdBoxes"
                 value={form.storageFdBoxes}
                 onChange={set("storageFdBoxes")}
                 placeholder="0"
               />
+              <FieldError name="storageFdBoxes" />
             </div>
             <div className="hive-field">
               <label className="hive-label">3/4 boxes</label>
@@ -59,10 +62,12 @@ export default function AdditionsSection({ form, set, setCheck }) {
                 className="hive-input"
                 type="number"
                 min="0"
+                id="field-storageThreeQuarterBoxes"
                 value={form.storageThreeQuarterBoxes}
                 onChange={set("storageThreeQuarterBoxes")}
                 placeholder="0"
               />
+              <FieldError name="storageThreeQuarterBoxes" />
             </div>
           </div>
           <div className="hive-chk-grid" style={{ marginTop: 8 }}>

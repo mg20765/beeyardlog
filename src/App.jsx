@@ -16,6 +16,7 @@ import BackupReminder from "./components/BackupReminder.jsx";
 import DraftNotice from "./components/DraftNotice.jsx";
 import MissingFieldsWarning from "./components/MissingFieldsWarning.jsx";
 import InputProblems from "./components/InputProblems.jsx";
+import { ProblemsContext } from "./components/problemsContext.js";
 import useHiveLog from "./hooks/useHiveLog.js";
 
 export default function HiveLogbook() {
@@ -28,6 +29,7 @@ export default function HiveLogbook() {
     hiveIdError,
     missingFields,
     inputProblems,
+    goToField,
     needsBackupReminder,
     entriesSinceBackup,
     set,
@@ -44,24 +46,31 @@ export default function HiveLogbook() {
     restoreFromFile,
   } = useHiveLog();
 
+  // field name -> message, so each field can show its own problem.
+  const problemByField = Object.fromEntries(
+    (inputProblems ?? []).map((p) => [p.field, p.message]),
+  );
+
   return (
     <div className="hive-app">
       <Header justSaved={justSaved} />
 
       <DraftNotice visible={draftRestored} onDiscard={discardDraft} />
 
-      <HiveDetailsSection form={form} set={set} hiveIdError={hiveIdError} />
-      <WeatherSection form={form} set={set} />
-      <ConditionSection form={form} set={set} />
-      <MiteCheckSection form={form} set={set} setCheck={setCheck} />
-      <TreatmentsSection form={form} set={set} setCheck={setCheck} />
-      <FeedingSection form={form} set={set} setCheck={setCheck} />
-      <AdditionsSection form={form} set={set} setCheck={setCheck} />
-      <FoodStoresSection form={form} set={set} />
-      <ExtractionSection form={form} set={set} />
-      <NotesSection form={form} set={set} />
+      <ProblemsContext.Provider value={problemByField}>
+        <HiveDetailsSection form={form} set={set} hiveIdError={hiveIdError} />
+        <WeatherSection form={form} set={set} />
+        <ConditionSection form={form} set={set} />
+        <MiteCheckSection form={form} set={set} setCheck={setCheck} />
+        <TreatmentsSection form={form} set={set} setCheck={setCheck} />
+        <FeedingSection form={form} set={set} setCheck={setCheck} />
+        <AdditionsSection form={form} set={set} setCheck={setCheck} />
+        <FoodStoresSection form={form} set={set} />
+        <ExtractionSection form={form} set={set} />
+        <NotesSection form={form} set={set} />
+      </ProblemsContext.Provider>
 
-      <InputProblems problems={inputProblems} />
+      <InputProblems problems={inputProblems} onGoTo={goToField} />
 
       <MissingFieldsWarning
         fields={missingFields}

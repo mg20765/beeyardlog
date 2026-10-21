@@ -181,7 +181,18 @@ export default function useHiveLog() {
     if (problems.length === 0) return true;
     setMissingFields(null);
     setInputProblems(problems);
+    // Take the person straight to the first problem instead of leaving them
+    // to scroll back up and find it.
+    goToField(problems[0].field);
     return false;
+  };
+
+  // Scrolls a form field to the middle of the screen and puts the cursor in it.
+  const goToField = (field) => {
+    const el = document.getElementById(`field-${field}`);
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    el.focus({ preventScroll: true });
   };
 
   // Called by the "+ Add to log" button. Blocks on a missing Hive ID
@@ -300,6 +311,7 @@ export default function useHiveLog() {
     hiveIdError,
     missingFields,
     inputProblems,
+    goToField,
     needsBackupReminder:
       !loading && entriesSinceBackup >= BACKUP_REMINDER_THRESHOLD,
     entriesSinceBackup,
