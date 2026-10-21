@@ -51,7 +51,7 @@ export default function HiveLogbook() {
       <HiveDetailsSection form={form} set={set} hiveIdError={hiveIdError} />
       <WeatherSection form={form} set={set} />
       <ConditionSection form={form} set={set} />
-      <MiteCheckSection form={form} set={set} />
+      <MiteCheckSection form={form} set={set} setCheck={setCheck} />
       <TreatmentsSection form={form} set={set} setCheck={setCheck} />
       <FeedingSection form={form} set={set} setCheck={setCheck} />
       <AdditionsSection form={form} set={set} setCheck={setCheck} />

@@ -20,6 +20,9 @@ export const initialForm = () => ({
   miteMethod: "",
   miteBees: "",
   miteCount: "",
+  // Ticked when no mite check was done this visit, so a blank means "forgot"
+  // and "Not done" means "decided to skip".
+  miteNotDone: false,
   // Varroa / mite treatments
   trtOxalic: false,
   trtApivar: false,
@@ -128,11 +131,14 @@ export function formToRow(f) {
     Population: f.population,
     "Queen Cells": f.queenCells,
     "Queen Sighted": f.queenSighted,
-    "Mite Method": f.miteMethod,
-    "Bees Sampled": f.miteBees,
-    "Mites Counted": f.miteCount,
+    // When skipped, any numbers typed earlier are ignored.
+    "Mite Method": f.miteNotDone ? "Not done" : f.miteMethod,
+    "Bees Sampled": f.miteNotDone ? "" : f.miteBees,
+    "Mites Counted": f.miteNotDone ? "" : f.miteCount,
     // Worked out here (not typed) so the saved row always agrees with the counts.
-    "Mites per 100 Bees": mitesPer100(f.miteBees, f.miteCount) ?? "",
+    "Mites per 100 Bees": f.miteNotDone
+      ? ""
+      : (mitesPer100(f.miteBees, f.miteCount) ?? ""),
     Treatments: treatments,
     "Other Treatment": f.trtOther,
     "AFB Checked": f.afbChecked,

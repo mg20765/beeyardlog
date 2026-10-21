@@ -1,4 +1,4 @@
-export default function RadioGroup({ name, options, value, onChange }) {
+export default function RadioGroup({ name, options, value, onChange, disabled = false }) {
   return (
     <div className="hive-radio-group">
       {options.map((o) => (
@@ -8,6 +8,7 @@ export default function RadioGroup({ name, options, value, onChange }) {
             name={name}
             value={o}
             checked={value === o}
+            disabled={disabled}
             onChange={() => onChange(o)}
           />
           {o}

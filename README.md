@@ -24,7 +24,7 @@ Sample data only; the hives shown are made up.
 - **Doesn't lose your work.** A half-filled form is kept if the page reloads, deletes and "Clear log" ask first, and failed saves show an error instead of failing silently.
 - **Mite check.** Record an alcohol wash or sugar roll and get mites per 100 bees, with a clear hint when a count reaches the treatment threshold.
 - **Protects your data.** JSON backup and restore (with a reminder after 10 new entries), Excel export, and a request to the browser not to clear stored data when the phone runs low on space.
-- **Tested.** 82 unit tests (Vitest) and 30 end-to-end tests (Playwright) run on every push in GitHub Actions.
+- **Tested.** 84 unit tests (Vitest) and 33 end-to-end tests (Playwright) run on every push in GitHub Actions.
 
 ## Getting started
 

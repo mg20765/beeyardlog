@@ -162,6 +162,24 @@ describe("formToRow", () => {
     expect(row["Mites per 100 Bees"]).toBe("");
   });
 
+  it("records 'Not done' when the mite check was skipped, ignoring any numbers typed", () => {
+    const row = formToRow({
+      ...initialForm(),
+      miteNotDone: true,
+      miteMethod: "Alcohol wash",
+      miteBees: "300",
+      miteCount: "9",
+    });
+    expect(row["Mite Method"]).toBe("Not done");
+    expect(row["Bees Sampled"]).toBe("");
+    expect(row["Mites Counted"]).toBe("");
+    expect(row["Mites per 100 Bees"]).toBe("");
+  });
+
+  it("defaults the mite check to not skipped", () => {
+    expect(initialForm().miteNotDone).toBe(false);
+  });
+
   it("passes plain fields through unchanged", () => {
     const f = { ...initialForm(), hiveId: "H7", yardNo: "3", notes: "calm hive" };
     const row = formToRow(f);

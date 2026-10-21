@@ -493,3 +493,8 @@
   font-size: 13px;
   color: #8a2b20;
 }
+
+/* Mite check fields while "Not done this visit" is ticked */
+.hive-mite-off {
+  opacity: 0.45;
+}

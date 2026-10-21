@@ -5,10 +5,12 @@ import {
   isAtOrAboveThreshold,
 } from "../utils/mites.js";
 
-export default function MiteCheckSection({ form, set }) {
-  const rate = mitesPer100(form.miteBees, form.miteCount);
+export default function MiteCheckSection({ form, set, setCheck }) {
+  const skipped = form.miteNotDone;
+  const rate = skipped ? null : mitesPer100(form.miteBees, form.miteCount);
   const bothEntered = form.miteBees !== "" && form.miteCount !== "";
   const tooManyMites =
+    !skipped &&
     bothEntered &&
     Number(form.miteBees) > 0 &&
     Number(form.miteCount) > Number(form.miteBees);
@@ -16,39 +18,54 @@ export default function MiteCheckSection({ form, set }) {
   return (
     <div className="hive-section">
       <p className="hive-section__title">Mite check</p>
-      <div style={{ marginBottom: 10 }}>
-        <label className="hive-label">Method</label>
-        <RadioGroup
-          name="miteMethod"
-          options={["Alcohol wash", "Sugar roll"]}
-          value={form.miteMethod}
-          onChange={set("miteMethod")}
+
+      <label className="hive-chk-item" style={{ marginBottom: 10 }}>
+        <input
+          type="checkbox"
+          checked={skipped}
+          onChange={setCheck("miteNotDone")}
         />
-      </div>
-      <div className="hive-row2">
-        <div className="hive-field">
-          <label className="hive-label">Bees sampled</label>
-          <input
-            className="hive-input"
-            type="number"
-            min="1"
-            inputMode="numeric"
-            value={form.miteBees}
-            onChange={set("miteBees")}
-            placeholder="e.g. 300"
+        Not done this visit
+      </label>
+
+      <div className={skipped ? "hive-mite-off" : undefined}>
+        <div style={{ marginBottom: 10 }}>
+          <label className="hive-label">Method</label>
+          <RadioGroup
+            name="miteMethod"
+            options={["Alcohol wash", "Sugar roll"]}
+            value={form.miteMethod}
+            onChange={set("miteMethod")}
+            disabled={skipped}
           />
         </div>
-        <div className="hive-field">
-          <label className="hive-label">Mites counted</label>
-          <input
-            className="hive-input"
-            type="number"
-            min="0"
-            inputMode="numeric"
-            value={form.miteCount}
-            onChange={set("miteCount")}
-            placeholder="e.g. 5"
-          />
+        <div className="hive-row2">
+          <div className="hive-field">
+            <label className="hive-label">Bees sampled</label>
+            <input
+              className="hive-input"
+              type="number"
+              min="1"
+              inputMode="numeric"
+              value={form.miteBees}
+              onChange={set("miteBees")}
+              placeholder="e.g. 300"
+              disabled={skipped}
+            />
+          </div>
+          <div className="hive-field">
+            <label className="hive-label">Mites counted</label>
+            <input
+              className="hive-input"
+              type="number"
+              min="0"
+              inputMode="numeric"
+              value={form.miteCount}
+              onChange={set("miteCount")}
+              placeholder="e.g. 5"
+              disabled={skipped}
+            />
+          </div>
         </div>
       </div>
 
@@ -57,7 +74,7 @@ export default function MiteCheckSection({ form, set }) {
           Mites can't be more than the bees sampled. Check the two numbers.
         </p>
       )}
-      {bothEntered && !tooManyMites && rate === null && (
+      {!skipped && bothEntered && !tooManyMites && rate === null && (
         <p className="hive-mite-error">
           Use whole numbers, with at least 1 bee sampled.
         </p>

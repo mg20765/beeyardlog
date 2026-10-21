@@ -67,6 +67,47 @@ test("an entry with no mite check saves normally", async ({ page }) => {
   await expect(page.locator(".hive-log-detail")).not.toContainText("Mite Method");
 });
 
+test("'Not done this visit' switches the mite fields off and is saved as 'Not done'", async ({ page }) => {
+  await page.getByPlaceholder("e.g. H1").fill("H3");
+  await page.getByLabel("Not done this visit").check();
+
+  await expect(bees(page)).toBeDisabled();
+  await expect(mites(page)).toBeDisabled();
+  await expect(page.getByLabel("Alcohol wash")).toBeDisabled();
+
+  await page.getByRole("button", { name: "+ Add to log" }).click();
+  await page.getByRole("button", { name: "Add anyway" }).click();
+  await page.locator(".hive-log-row", { hasText: "H3" }).click();
+
+  await expect(
+    page.locator(".hive-log-detail-row", { hasText: "Mite Method" }),
+  ).toContainText("Not done");
+  await expect(page.locator(".hive-log-detail")).not.toContainText("Mites per 100 Bees");
+});
+
+test("numbers typed before ticking 'Not done' aren't shown or saved, but come back if untick", async ({ page }) => {
+  await bees(page).fill("300");
+  await mites(page).fill("9");
+  await expect(page.getByText("Mites per 100 bees: 3")).toBeVisible();
+
+  await page.getByLabel("Not done this visit").check();
+  await expect(page.getByText(/Mites per 100 bees:/)).toHaveCount(0);
+
+  await page.getByLabel("Not done this visit").uncheck();
+  await expect(bees(page)).toHaveValue("300");
+  await expect(mites(page)).toHaveValue("9");
+  await expect(page.getByText("Mites per 100 bees: 3")).toBeVisible();
+});
+
+test("'Not done' comes back with a restored draft", async ({ page }) => {
+  await page.getByLabel("Not done this visit").check();
+
+  await page.reload();
+
+  await expect(page.getByLabel("Not done this visit")).toBeChecked();
+  await expect(bees(page)).toBeDisabled();
+});
+
 test("the mite fields come back with a restored draft", async ({ page }) => {
   await bees(page).fill("300");
   await mites(page).fill("4");
