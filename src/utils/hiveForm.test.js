@@ -135,6 +135,33 @@ describe("formToRow", () => {
     expect(row["New Hive ID"]).toBe("H3");
   });
 
+  it("records the mite check and works out mites per 100 bees", () => {
+    const row = formToRow({
+      ...initialForm(),
+      miteMethod: "Alcohol wash",
+      miteBees: "300",
+      miteCount: "9",
+    });
+    expect(row["Mite Method"]).toBe("Alcohol wash");
+    expect(row["Bees Sampled"]).toBe("300");
+    expect(row["Mites Counted"]).toBe("9");
+    expect(row["Mites per 100 Bees"]).toBe(3);
+  });
+
+  it("leaves the mite columns empty when no mite check was done", () => {
+    const row = formToRow(initialForm());
+    expect(row["Mite Method"]).toBe("");
+    expect(row["Bees Sampled"]).toBe("");
+    expect(row["Mites Counted"]).toBe("");
+    expect(row["Mites per 100 Bees"]).toBe("");
+  });
+
+  it("leaves mites per 100 empty (but keeps the counts) when the numbers don't add up", () => {
+    const row = formToRow({ ...initialForm(), miteBees: "10", miteCount: "50" });
+    expect(row["Mites Counted"]).toBe("50");
+    expect(row["Mites per 100 Bees"]).toBe("");
+  });
+
   it("passes plain fields through unchanged", () => {
     const f = { ...initialForm(), hiveId: "H7", yardNo: "3", notes: "calm hive" };
     const row = formToRow(f);

@@ -1,5 +1,6 @@
 // Shared form shape + row-mapping helpers for the Hive Logbook.
 import { todayLocal } from "./date.js";
+import { mitesPer100 } from "./mites.js";
 
 export const STORAGE_KEY = "hive_inspection_log";
 
@@ -15,6 +16,10 @@ export const initialForm = () => ({
   population: "",
   queenCells: "",
   queenSighted: "",
+  // Varroa mite check (alcohol wash / sugar roll)
+  miteMethod: "",
+  miteBees: "",
+  miteCount: "",
   // Varroa / mite treatments
   trtOxalic: false,
   trtApivar: false,
@@ -123,6 +128,11 @@ export function formToRow(f) {
     Population: f.population,
     "Queen Cells": f.queenCells,
     "Queen Sighted": f.queenSighted,
+    "Mite Method": f.miteMethod,
+    "Bees Sampled": f.miteBees,
+    "Mites Counted": f.miteCount,
+    // Worked out here (not typed) so the saved row always agrees with the counts.
+    "Mites per 100 Bees": mitesPer100(f.miteBees, f.miteCount) ?? "",
     Treatments: treatments,
     "Other Treatment": f.trtOther,
     "AFB Checked": f.afbChecked,

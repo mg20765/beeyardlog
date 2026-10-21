@@ -3,6 +3,7 @@ import Header from "./NavBar/Header.jsx";
 import HiveDetailsSection from "./components/HiveDetailsSection.jsx";
 import WeatherSection from "./components/WeatherSection.jsx";
 import ConditionSection from "./components/ConditionSection.jsx";
+import MiteCheckSection from "./components/MiteCheckSection.jsx";
 import TreatmentsSection from "./components/TreatmentsSection.jsx";
 import FeedingSection from "./components/FeedingSection.jsx";
 import AdditionsSection from "./components/AdditionsSection.jsx";
@@ -50,6 +51,7 @@ export default function HiveLogbook() {
       <HiveDetailsSection form={form} set={set} hiveIdError={hiveIdError} />
       <WeatherSection form={form} set={set} />
       <ConditionSection form={form} set={set} />
+      <MiteCheckSection form={form} set={set} />
       <TreatmentsSection form={form} set={set} setCheck={setCheck} />
       <FeedingSection form={form} set={set} setCheck={setCheck} />
       <AdditionsSection form={form} set={set} setCheck={setCheck} />

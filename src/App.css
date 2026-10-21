@@ -464,3 +464,32 @@
   height: 1px;
   background: var(--border);
 }
+
+/* Mite check result */
+.hive-mite-result {
+  font-weight: 600;
+  margin: 12px 0 0;
+  color: var(--text);
+}
+
+.hive-mite-status {
+  margin: 6px 0 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  background: var(--badge-bg);
+  color: var(--badge-text);
+}
+
+.hive-mite-status--treat {
+  background: #fdecea;
+  border: 1px solid #f3c1bb;
+  color: #8a2b20;
+  font-weight: 600;
+}
+
+.hive-mite-error {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: #8a2b20;
+}
