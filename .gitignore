@@ -36,3 +36,8 @@ playwright/.cache/
 
 # Claude Code notes (local only)
 .claude/
+
+# Real hive records: exports and backups must never be committed.
+Hive LOgs/
+hive_log_*.xlsx
+hive_log_backup_*.json
