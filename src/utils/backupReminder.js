@@ -15,6 +15,14 @@ export function entriesSinceBackup(log, watermark) {
   return log.filter((r) => r.id > watermark).length;
 }
 
+// New entries plus entries corrected since the last backup. A correction keeps
+// the entry's id, so it can't be seen from the ids alone; it is counted
+// separately, because the backup file still holds the old version.
+export function changesSinceBackup(log, watermark, corrections = 0) {
+  const fixes = Number.isFinite(corrections) && corrections > 0 ? Math.floor(corrections) : 0;
+  return entriesSinceBackup(log, watermark) + fixes;
+}
+
 // Converts the old saved value ("N entries existed at the last backup") to a
 // watermark, so people who already have a backup history keep it.
 export function watermarkFromLegacyCount(log, count) {

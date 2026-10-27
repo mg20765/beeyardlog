@@ -22,10 +22,11 @@ export default function FeedingSection({ form, set, setCheck }) {
         ))}
       </div>
       <div className="hive-field" style={{ marginTop: 10 }}>
-        <label className="hive-label">Other feed</label>
+        <label className="hive-label" htmlFor="field-feedOther">Other feed</label>
         <input
           className="hive-input"
           value={form.feedOther}
+          id="field-feedOther"
           onChange={set("feedOther")}
           placeholder="Specify…"
         />

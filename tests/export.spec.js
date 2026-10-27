@@ -39,7 +39,8 @@ test("Export all to Excel makes a spreadsheet with the logged inspections", asyn
   const [first, second] = rows;
   expect(first["Hive ID"]).toBe("H1");
   expect(first["Mite Method"]).toBe("Alcohol wash");
-  expect(first["Bees Sampled"]).toBe("300");
+  expect(first["Bees Sampled"]).toBe(300); // a real number, so Excel can add it up
+  expect(typeof first.Date).toBe("number"); // a real date, not text
   expect(first["Mites per 100 Bees"]).toBe(3);
   // Checkbox columns read Yes/No, not TRUE/FALSE.
   expect(first["AFB Checked"]).toBe("Yes");

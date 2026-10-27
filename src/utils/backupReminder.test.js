@@ -79,3 +79,26 @@ describe("watermarkAfterRestore", () => {
     expect(watermarkAfterRestore([], 0, rows(1, 2))).toBe(2);
   });
 });
+
+import { changesSinceBackup } from "./backupReminder.js";
+
+describe("changesSinceBackup", () => {
+  it("adds corrected entries to new ones, because the backup file holds the old version", () => {
+    expect(changesSinceBackup(rows(1, 2, 3, 4), 2, 0)).toBe(2);
+    expect(changesSinceBackup(rows(1, 2, 3, 4), 2, 3)).toBe(5);
+  });
+
+  it("counts corrections even when nothing new was added", () => {
+    expect(changesSinceBackup(rows(1, 2), 2, 4)).toBe(4);
+  });
+
+  it("is 0 when everything is backed up and nothing was corrected", () => {
+    expect(changesSinceBackup(rows(1, 2), 2, 0)).toBe(0);
+  });
+
+  it("ignores a missing, negative or non-number corrections value", () => {
+    expect(changesSinceBackup(rows(1, 2, 3), 1)).toBe(2);
+    expect(changesSinceBackup(rows(1, 2, 3), 1, -5)).toBe(2);
+    expect(changesSinceBackup(rows(1, 2, 3), 1, "x")).toBe(2);
+  });
+});

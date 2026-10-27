@@ -8,7 +8,7 @@ export default function WeatherSection({ form, set }) {
     <div className="hive-section">
       <p className="hive-section__title">Weather</p>
       <div className="hive-field" style={{ marginBottom: 10 }}>
-        <label className="hive-label">Temp (°C)</label>
+        <label className="hive-label" htmlFor="field-weatherTemp">Temp (°C)</label>
         <input
           className="hive-input"
           id="field-weatherTemp"

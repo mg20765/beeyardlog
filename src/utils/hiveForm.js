@@ -2,8 +2,6 @@
 import { todayLocal } from "./date.js";
 import { mitesPer100 } from "./mites.js";
 
-export const STORAGE_KEY = "hive_inspection_log";
-
 export const initialForm = () => ({
   date: todayLocal(),
   hiveId: "",

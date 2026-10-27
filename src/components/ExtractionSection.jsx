@@ -6,7 +6,7 @@ export default function ExtractionSection({ form, set }) {
       <p className="hive-section__title">Extraction</p>
       <div className="hive-row2">
         <div className="hive-field">
-          <label className="hive-label">Supers removed</label>
+          <label className="hive-label" htmlFor="field-supersRemoved">Supers removed</label>
           <input
             className="hive-input"
             type="number"
@@ -19,7 +19,7 @@ export default function ExtractionSection({ form, set }) {
           <FieldError name="supersRemoved" />
         </div>
         <div className="hive-field">
-          <label className="hive-label">Honey (kg)</label>
+          <label className="hive-label" htmlFor="field-honeyKg">Honey (kg)</label>
           <input
             className="hive-input"
             type="number"

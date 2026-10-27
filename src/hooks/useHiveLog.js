@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import * as XLSX from "xlsx";
 import { initialForm, formToRow } from "../utils/hiveForm.js";
 import { omitId } from "../utils/omitId.js";
-import { rowsForExport } from "../utils/exportRows.js";
+import { writeExcel } from "../utils/excel.js";
 import { todayLocal } from "../utils/date.js";
 import {
   isHiveIdMissing,
@@ -16,26 +15,34 @@ import {
   clearInspections,
   importInspections,
   updateInspection,
+  EntryGoneError,
 } from "../db/hiveDb.js";
 import { applyEdits } from "../utils/editEntry.js";
 import { downloadBackup, readBackupFile } from "../utils/backup.js";
-import { loadDraft, saveDraft, clearDraft } from "../utils/draft.js";
+import { loadDraft, saveDraft, clearDraft, isPristine } from "../utils/draft.js";
 import { requestPersistentStorage } from "../utils/persist.js";
+import { createSync } from "../utils/sync.js";
 import {
   maxId,
   entriesSinceBackup as countSinceBackup,
+  changesSinceBackup,
   watermarkFromLegacyCount,
   watermarkAfterRestore,
 } from "../utils/backupReminder.js";
 
-// Small on-device checkpoint (not the log itself, just a nudge tracker) for
-// reminding beekeepers to back up every N new inspections. We store the id
-// of the newest entry that was backed up (see utils/backupReminder.js).
+// Small on-device checkpoints (not the log itself, just nudge trackers) for
+// reminding beekeepers to back up every N changes. We store the id of the
+// newest entry that was backed up, and how many already-backed-up entries have
+// been corrected since (see utils/backupReminder.js).
 // The older key held "how many entries existed at the last backup"; it is
 // read once and converted so existing backup history isn't lost.
 const LAST_BACKUP_ID_KEY = "hive_last_backup_id";
+const EDITS_SINCE_BACKUP_KEY = "hive_edits_since_backup";
 const LEGACY_BACKUP_COUNT_KEY = "hive_last_backup_count";
 const BACKUP_REMINDER_THRESHOLD = 10;
+
+const ENTRY_GONE =
+  "That entry was deleted in another window, so it can't be changed.";
 
 // Returns the stored number, or null when the key is missing or unreadable.
 function readSavedNumber(key) {
@@ -49,9 +56,9 @@ function readSavedNumber(key) {
   }
 }
 
-function saveLastBackupId(n) {
+function writeSavedNumber(key, n) {
   try {
-    localStorage.setItem(LAST_BACKUP_ID_KEY, String(n));
+    localStorage.setItem(key, String(n));
   } catch {
     // ignore
   }
@@ -71,15 +78,37 @@ export default function useHiveLog() {
   const [lastBackupId, setLastBackupId] = useState(
     () => readSavedNumber(LAST_BACKUP_ID_KEY) ?? 0,
   );
+  const [editsSinceBackup, setEditsSinceBackup] = useState(
+    () => readSavedNumber(EDITS_SINCE_BACKUP_KEY) ?? 0,
+  );
   const [hiveIdError, setHiveIdError] = useState(false);
-  const [inputProblems, setInputProblems] = useState(null); // array of messages or null
+  const [inputProblems, setInputProblems] = useState(null); // array of {field, message} or null
   const [missingFields, setMissingFields] = useState(null); // array of {key,label} or null
   const savedTimeoutRef = useRef(null);
   const messageTimeoutRef = useRef(null);
   const savingRef = useRef(false);
+  const formRef = useRef(form); // the latest form, for listeners set up once
+  const defaultDateRef = useRef(todayLocal()); // the date the blank form was given
+  const syncRef = useRef(null); // tells other open copies of the app about changes
+  const refreshRef = useRef(null); // re-reads the log from the database
+
+  useEffect(() => {
+    formRef.current = form;
+  }, [form]);
 
   useEffect(() => {
     let cancelled = false;
+
+    const refreshLog = async () => {
+      try {
+        const rows = await getAllInspections();
+        if (!cancelled) setLog(rows);
+      } catch (err) {
+        console.warn("Could not refresh inspections:", err);
+      }
+    };
+    refreshRef.current = refreshLog;
+
     getAllInspections()
       .then((rows) => {
         if (cancelled) return;
@@ -92,7 +121,7 @@ export default function useHiveLog() {
           if (legacy) {
             const id = watermarkFromLegacyCount(rows, legacy);
             setLastBackupId(id);
-            saveLastBackupId(id);
+            writeSavedNumber(LAST_BACKUP_ID_KEY, id);
           }
         }
       })
@@ -100,8 +129,32 @@ export default function useHiveLog() {
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
+
+    // Another open copy (the installed app and a browser tab, say) changed the
+    // log: show what is really stored, so nothing stale is shown or backed up.
+    const sync = createSync(refreshLog);
+    syncRef.current = sync;
+
+    // The app comes back into view (a phone resumed next morning): re-read the
+    // log, and move a still-blank form's date on to today.
+    const onShown = () => {
+      if (document.visibilityState !== "visible") return;
+      refreshLog();
+      const f = formRef.current;
+      const today = todayLocal();
+      if (isPristine(f) && f.date === defaultDateRef.current && f.date !== today) {
+        defaultDateRef.current = today;
+        setForm((prev) => ({ ...prev, date: today }));
+      }
+    };
+    document.addEventListener("visibilitychange", onShown);
+    window.addEventListener("focus", onShown);
+
     return () => {
       cancelled = true;
+      document.removeEventListener("visibilitychange", onShown);
+      window.removeEventListener("focus", onShown);
+      sync.close();
     };
   }, []);
 
@@ -119,6 +172,8 @@ export default function useHiveLog() {
     [],
   );
 
+  const tellOtherCopies = () => syncRef.current?.notify();
+
   const flashSaved = () => {
     setJustSaved(true);
     clearTimeout(savedTimeoutRef.current);
@@ -129,6 +184,13 @@ export default function useHiveLog() {
     setImportMessage(msg);
     clearTimeout(messageTimeoutRef.current);
     messageTimeoutRef.current = setTimeout(() => setImportMessage(""), 4000);
+  };
+
+  // A blank form, dated today.
+  const resetForm = () => {
+    const fresh = initialForm();
+    defaultDateRef.current = fresh.date;
+    setForm(fresh);
   };
 
   const set = (key) => (e) => {
@@ -153,13 +215,17 @@ export default function useHiveLog() {
     try {
       const saved = await addInspection(formToRow(form));
       setLog((prev) => [...prev, saved]);
-      setForm(initialForm());
+      resetForm();
       setDraftRestored(false);
       setMissingFields(null);
       flashSaved();
+      tellOtherCopies();
       // The first saved entry is the moment there is something to protect.
       requestPersistentStorage();
-      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+      // The log lists newest first, so bring the new entry into view.
+      document
+        .querySelector(".hive-log-section")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
     } catch (err) {
       console.warn("Could not save inspection:", err);
       flashMessage("Couldn't save this entry. Your form is kept - try again.");
@@ -176,6 +242,14 @@ export default function useHiveLog() {
     return false;
   };
 
+  // Scrolls a form field to the middle of the screen and puts the cursor in it.
+  const goToField = (field) => {
+    const el = document.getElementById(`field-${field}`);
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    el.focus({ preventScroll: true });
+  };
+
   // Values that are clearly wrong (a brood coverage of 150, a cleared date)
   // are stopped at save, with a list of what to fix.
   const passesInputChecks = () => {
@@ -187,14 +261,6 @@ export default function useHiveLog() {
     // to scroll back up and find it.
     goToField(problems[0].field);
     return false;
-  };
-
-  // Scrolls a form field to the middle of the screen and puts the cursor in it.
-  const goToField = (field) => {
-    const el = document.getElementById(`field-${field}`);
-    if (!el) return;
-    el.scrollIntoView({ behavior: "smooth", block: "center" });
-    el.focus({ preventScroll: true });
   };
 
   // Called by the "+ Add to log" button. Blocks on a missing Hive ID
@@ -232,7 +298,7 @@ export default function useHiveLog() {
   };
 
   const discardDraft = () => {
-    setForm(initialForm());
+    resetForm();
     setDraftRestored(false);
     setHiveIdError(false);
     setInputProblems(null);
@@ -240,64 +306,76 @@ export default function useHiveLog() {
     clearDraft();
   };
 
-  // Saves corrections to a saved entry's typed fields. Returns true if it worked.
+  // Saves corrections to a saved entry's typed fields. Returns null if it
+  // worked, or a message saying why not.
   const updateEntry = async (id, edits) => {
     const current = log.find((r) => r.id === id);
-    if (!current) return false;
+    if (!current) {
+      flashMessage(ENTRY_GONE);
+      refreshRef.current?.();
+      return ENTRY_GONE;
+    }
     const next = applyEdits(current, edits);
+    if (JSON.stringify(next) === JSON.stringify(current)) return null; // nothing changed
     try {
       await updateInspection(next);
-      setLog((prev) => prev.map((r) => (r.id === id ? next : r)));
-      return true;
     } catch (err) {
+      if (err instanceof EntryGoneError) {
+        flashMessage(ENTRY_GONE);
+        refreshRef.current?.();
+        return ENTRY_GONE;
+      }
       console.warn("Could not update inspection:", err);
-      flashMessage("Couldn't save that change. Please try again.");
-      return false;
+      return "Couldn't save that change. Please try again.";
     }
+    setLog((prev) => prev.map((r) => (r.id === id ? next : r)));
+    tellOtherCopies();
+    // The backup file still holds the old version of an entry it already has.
+    if (current.id <= lastBackupId) {
+      const count = editsSinceBackup + 1;
+      setEditsSinceBackup(count);
+      writeSavedNumber(EDITS_SINCE_BACKUP_KEY, count);
+    }
+    return null;
   };
 
   const deleteEntry = async (id) => {
     try {
       await deleteInspection(id);
       setLog((prev) => prev.filter((r) => r.id !== id));
+      tellOtherCopies();
     } catch (err) {
       console.warn("Could not delete inspection:", err);
       flashMessage("Couldn't delete that entry. Please try again.");
     }
   };
 
+  // Everything is backed up (or gone) after these, so the trackers start over.
+  const resetBackupTrackers = (watermark) => {
+    setLastBackupId(watermark);
+    writeSavedNumber(LAST_BACKUP_ID_KEY, watermark);
+    setEditsSinceBackup(0);
+    writeSavedNumber(EDITS_SINCE_BACKUP_KEY, 0);
+  };
+
   const clearLog = async () => {
     try {
       await clearInspections();
       setLog([]);
-      setLastBackupId(0);
-      saveLastBackupId(0);
+      resetBackupTrackers(0);
+      tellOtherCopies();
     } catch (err) {
       console.warn("Could not clear log:", err);
       flashMessage("Couldn't clear the log. Please try again.");
     }
   };
 
-  const exportAll = () => {
-    if (log.length === 0) return;
-    const rows = rowsForExport(log);
-    const ws = XLSX.utils.json_to_sheet(rows);
-    const keys = Object.keys(rows[0]);
-    ws["!cols"] = keys.map((k) => ({
-      wch:
-        Math.max(k.length, ...rows.map((r) => String(r[k] || "").length)) + 2,
-    }));
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Inspections");
-    XLSX.writeFile(wb, `hive_log_${todayLocal()}.xlsx`);
-  };
+  const exportAll = () => writeExcel(log);
 
   const backupToFile = () => {
     if (log.length === 0) return;
     downloadBackup(log.map(omitId));
-    const id = maxId(log);
-    setLastBackupId(id);
-    saveLastBackupId(id);
+    resetBackupTrackers(maxId(log));
   };
 
   const restoreFromFile = async (file) => {
@@ -305,10 +383,11 @@ export default function useHiveLog() {
       const rows = await readBackupFile(file);
       const updated = await importInspections(rows);
       setLog(updated);
+      tellOtherCopies();
       const id = watermarkAfterRestore(log, lastBackupId, updated);
       if (id !== lastBackupId) {
         setLastBackupId(id);
-        saveLastBackupId(id);
+        writeSavedNumber(LAST_BACKUP_ID_KEY, id);
       }
       flashMessage(
         `Imported ${rows.length} inspection${rows.length === 1 ? "" : "s"}.`,
@@ -319,6 +398,7 @@ export default function useHiveLog() {
   };
 
   const entriesSinceBackup = countSinceBackup(log, lastBackupId);
+  const changesTotal = changesSinceBackup(log, lastBackupId, editsSinceBackup);
 
   return {
     form,
@@ -330,9 +410,9 @@ export default function useHiveLog() {
     missingFields,
     inputProblems,
     goToField,
-    needsBackupReminder:
-      !loading && entriesSinceBackup >= BACKUP_REMINDER_THRESHOLD,
+    needsBackupReminder: !loading && changesTotal >= BACKUP_REMINDER_THRESHOLD,
     entriesSinceBackup,
+    correctionsSinceBackup: editsSinceBackup,
     set,
     setCheck,
     addToLog,

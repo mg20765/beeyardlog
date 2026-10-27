@@ -16,7 +16,7 @@ export default function ConditionSection({ form, set }) {
       </div>
       <div className="hive-row2">
         <div className="hive-field">
-          <label className="hive-label">Brood coverage %</label>
+          <label className="hive-label" htmlFor="field-broodPct">Brood coverage %</label>
           <input
             className="hive-input"
             type="number"
@@ -30,7 +30,7 @@ export default function ConditionSection({ form, set }) {
           <FieldError name="broodPct" />
         </div>
         <div className="hive-field">
-          <label className="hive-label">Frames</label>
+          <label className="hive-label" htmlFor="field-broodFrames">Frames</label>
           <input
             className="hive-input"
             type="number"

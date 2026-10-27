@@ -97,3 +97,34 @@ test("with several problems it jumps to the first, and each line in the box jump
   await expect(page.locator("#field-broodPct")).toBeInViewport();
   await expect(page.locator("#field-broodPct")).toBeFocused();
 });
+
+test("a date in the future isn't saved", async ({ page }) => {
+  await page.locator('input[type="date"]').fill("2099-01-01");
+  await addToLog(page);
+
+  await expect(problems(page)).toContainText("can't be in the future");
+  await expect(page.getByText("No inspections logged yet")).toBeVisible();
+});
+
+test("a date that is far too old isn't saved", async ({ page }) => {
+  await page.locator('input[type="date"]').fill("1999-12-31");
+  await addToLog(page);
+
+  await expect(problems(page)).toContainText("looks wrong");
+});
+
+test("a number written oddly, like 1e3, isn't saved as typed", async ({ page }) => {
+  await page.locator("#field-broodFrames").fill("1e3");
+  await addToLog(page);
+
+  await expect(problems(page)).toContainText("Brood frames");
+  await expect(page.getByText("No inspections logged yet")).toBeVisible();
+});
+
+test("a plain decimal number is fine", async ({ page }) => {
+  await page.locator("#field-honeyKg").fill("12.5");
+  await addToLog(page);
+  await page.getByRole("button", { name: "Add anyway" }).click();
+
+  await expect(page.locator(".hive-count-badge")).toHaveText("1");
+});

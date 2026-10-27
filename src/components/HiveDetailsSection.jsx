@@ -6,19 +6,21 @@ export default function HiveDetailsSection({ form, set, hiveIdError }) {
       <p className="hive-section__title">Hive details</p>
       <div className="hive-row2">
         <div className="hive-field">
-          <label className="hive-label">Yard #</label>
+          <label className="hive-label" htmlFor="field-yardNo">Yard #</label>
           <input
             className="hive-input"
             value={form.yardNo}
+            id="field-yardNo"
             onChange={set("yardNo")}
             placeholder="e.g. Y2"
           />
         </div>
         <div className="hive-field">
-          <label className="hive-label">Hive ID</label>
+          <label className="hive-label" htmlFor="field-hiveId">Hive ID</label>
           <input
             className={`hive-input${hiveIdError ? " hive-input--error" : ""}`}
             value={form.hiveId}
+            id="field-hiveId"
             onChange={set("hiveId")}
             placeholder="e.g. H1"
           />
@@ -28,7 +30,7 @@ export default function HiveDetailsSection({ form, set, hiveIdError }) {
         </div>
       </div>
       <div className="hive-field">
-        <label className="hive-label">Date</label>
+        <label className="hive-label" htmlFor="field-date">Date</label>
         <input
           className="hive-input"
           id="field-date"

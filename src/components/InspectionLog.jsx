@@ -1,5 +1,7 @@
 import { useState } from "react";
 import EntryEditor from "./EntryEditor.jsx";
+import { sortNewestFirst, filterLog } from "../utils/logView.js";
+import { isAtOrAboveThreshold } from "../utils/mites.js";
 
 // Every column formToRow() can produce, in the order we want it displayed
 // when a log entry is expanded. Empty/false values are skipped at render
@@ -38,14 +40,33 @@ const DETAIL_FIELDS = [
   "Notes",
 ];
 
+// A search box only helps once the log is long enough to need one.
+const SEARCH_FROM = 6;
+
 function hasValue(v) {
   return v !== "" && v !== false && v !== undefined && v !== null;
+}
+
+// "Mites 3 per 100", red once it reaches the treatment line. Nothing for an
+// entry with no mite result.
+function MiteChip({ value }) {
+  const rate = typeof value === "number" ? value : Number.parseFloat(value);
+  if (!hasValue(value) || !Number.isFinite(rate)) return null;
+  return (
+    <span className={`hive-mite-chip${isAtOrAboveThreshold(rate) ? " hive-mite-chip--high" : ""}`}>
+      Mites {rate} per 100
+    </span>
+  );
 }
 
 export default function InspectionLog({ log, loading, deleteEntry, updateEntry }) {
   const [expandedId, setExpandedId] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+  const [query, setQuery] = useState("");
+
+  const searching = query.trim() !== "";
+  const shown = filterLog(sortNewestFirst(log), query);
 
   return (
     <div className="hive-log-section">
@@ -56,48 +77,60 @@ export default function InspectionLog({ log, loading, deleteEntry, updateEntry }
           <span className="hive-badge">✓ Saved to device</span>
         )}
       </p>
+      {log.length >= SEARCH_FROM && (
+        <>
+          <input
+            type="search"
+            className="hive-input hive-log-search"
+            aria-label="Search the log"
+            placeholder="Search hive, yard, notes or date"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          {searching && (
+            <p className="hive-btn-hint">
+              Showing {shown.length} of {log.length}
+            </p>
+          )}
+        </>
+      )}
       {loading ? (
         <p className="hive-empty-state">Loading your log…</p>
       ) : log.length === 0 ? (
         <p className="hive-empty-state">No inspections logged yet</p>
+      ) : shown.length === 0 ? (
+        <p className="hive-empty-state">No entries match your search</p>
       ) : (
-        log.map((r, i) => {
+        shown.map((r, i) => {
           const isOpen = expandedId === r.id;
           const details = DETAIL_FIELDS.filter((k) => hasValue(r[k]));
           return (
             <div key={r.id}>
-              <div
-                className="hive-log-row"
-                role="button"
-                tabIndex={0}
-                onClick={() => setExpandedId(isOpen ? null : r.id)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    setExpandedId(isOpen ? null : r.id);
-                  }
-                }}
-              >
-                <div>
-                  <p className="hive-log-title">
+              <div className="hive-log-row">
+                <button
+                  type="button"
+                  className="hive-log-toggle"
+                  aria-expanded={isOpen}
+                  onClick={() => setExpandedId(isOpen ? null : r.id)}
+                >
+                  <span className="hive-log-title">
                     {r["Hive ID"] || "Unnamed hive"}
                     <span className="hive-badge">{r["Date"] || "–"}</span>
-                  </p>
-                  <p className="hive-log-sub">
+                  </span>
+                  <span className="hive-log-sub">
                     Pop: {r["Population"] || "–"} · Queen:{" "}
                     {r["Queen Sighted"] || "–"} · Honey:{" "}
                     {r["Honey Level"] || "–"}
+                    <MiteChip value={r["Mites per 100 Bees"]} />
                     <span className="hive-log-expand-hint">
                       {isOpen ? " · Hide details ▲" : " · Tap for all fields ▼"}
                     </span>
-                  </p>
-                </div>
+                  </span>
+                </button>
                 <button
                   type="button"
                   className="hive-del-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setConfirmDeleteId(r.id);
-                  }}
+                  onClick={() => setConfirmDeleteId(r.id)}
                   aria-label="Delete"
                 >
                   ✕
@@ -136,7 +169,9 @@ export default function InspectionLog({ log, loading, deleteEntry, updateEntry }
                   row={r}
                   onCancel={() => setEditingId(null)}
                   onSave={async (edits) => {
-                    if (await updateEntry(r.id, edits)) setEditingId(null);
+                    const problem = await updateEntry(r.id, edits);
+                    if (!problem) setEditingId(null);
+                    return problem;
                   }}
                 />
               )}
@@ -165,7 +200,7 @@ export default function InspectionLog({ log, loading, deleteEntry, updateEntry }
                   </button>
                 </div>
               )}
-              {i < log.length - 1 && <div className="hive-divider" />}
+              {i < shown.length - 1 && <div className="hive-divider" />}
             </div>
           );
         })

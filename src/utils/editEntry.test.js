@@ -117,3 +117,57 @@ describe("getEditProblems", () => {
     expect(problemsFor({ miteCount: "999" }, r)[0].field).toBe("miteCount");
   });
 });
+
+describe("applyEdits: more cases", () => {
+  it("lets Notes be added to an entry that had none", () => {
+    const before = row();
+    const after = applyEdits(before, { ...rowToEdits(before), notes: "  strong colony " });
+    expect(after.Notes).toBe("strong colony");
+  });
+
+  it("changes the date, and nothing else about the entry", () => {
+    const before = row();
+    const after = applyEdits(before, { ...rowToEdits(before), date: "2026-10-18" });
+    expect(after.Date).toBe("2026-10-18");
+    expect(after["Hive ID"]).toBe("H1");
+  });
+
+  it("ignores edits to a field that isn't offered for this entry", () => {
+    const before = row(); // no Temp recorded, so Temp isn't editable
+    const after = applyEdits(before, { ...rowToEdits(before), weatherTemp: "30" });
+    expect(after).not.toHaveProperty("Temp (°C)");
+  });
+
+  it("leaves mites per 100 blank when the counts are cleared", () => {
+    const before = row({
+      "Mite Method": "Alcohol wash",
+      "Bees Sampled": "300",
+      "Mites Counted": "9",
+      "Mites per 100 Bees": 3,
+    });
+    const after = applyEdits(before, { ...rowToEdits(before), miteCount: "" });
+    expect(after["Mites per 100 Bees"]).toBe("");
+  });
+});
+
+describe("getEditProblems: more cases", () => {
+  const problemsFor = (over, r = row()) => getEditProblems({ ...rowToEdits(r), ...over }, r);
+
+  it("rejects a date in the future or from long ago", () => {
+    expect(problemsFor({ date: "2099-01-01" })[0]).toMatchObject({ field: "date" });
+    expect(problemsFor({ date: "1999-01-01" })[0]).toMatchObject({ field: "date" });
+  });
+
+  it("rejects an oddly written number", () => {
+    const r = row({ "Brood Frames": "7" });
+    expect(problemsFor({ broodFrames: "1e3" }, r)[0]).toMatchObject({ field: "broodFrames" });
+    expect(problemsFor({ broodFrames: "8" }, r)).toEqual([]);
+  });
+
+  it("lists the Hive ID problem first, then the others", () => {
+    const r = row({ "Brood Coverage %": "80" });
+    const fields = problemsFor({ hiveId: "", broodPct: "150" }, r).map((p) => p.field);
+    expect(fields[0]).toBe("hiveId");
+    expect(fields).toContain("broodPct");
+  });
+});

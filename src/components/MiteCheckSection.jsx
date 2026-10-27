@@ -41,7 +41,7 @@ export default function MiteCheckSection({ form, set, setCheck }) {
         </div>
         <div className="hive-row2">
           <div className="hive-field">
-            <label className="hive-label">Bees sampled</label>
+            <label className="hive-label" htmlFor="field-miteBees">Bees sampled</label>
             <input
               className="hive-input"
               type="number"
@@ -55,7 +55,7 @@ export default function MiteCheckSection({ form, set, setCheck }) {
             />
           </div>
           <div className="hive-field">
-            <label className="hive-label">Mites counted</label>
+            <label className="hive-label" htmlFor="field-miteCount">Mites counted</label>
             <input
               className="hive-input"
               type="number"

@@ -127,3 +127,83 @@ describe("getInputProblems", () => {
     expect(messagesFor({ date: "", broodPct: "150", broodFrames: "-2" })).toHaveLength(3);
   });
 });
+
+describe("getInputProblems: plain numbers only", () => {
+  const f = (over) => ({ ...initialForm(), hiveId: "H1", ...over });
+  const msgs = (over) => getInputProblems(f(over)).map((p) => p.message);
+
+  it("rejects number formats that look odd when saved", () => {
+    for (const bad of ["1e3", "0x10", "1_0", "1,5", "abc", "--2", "5."]) {
+      expect(msgs({ broodFrames: bad })[0], `"${bad}"`).toMatch(/Brood frames/);
+    }
+  });
+
+  it("accepts ordinary numbers, with or without a decimal point", () => {
+    for (const ok of ["7", "0", "12", " 7 "]) expect(msgs({ broodFrames: ok }), ok).toEqual([]);
+    for (const ok of ["0.5", ".5", "12.25", "-3"]) expect(msgs({ weatherTemp: ok }), ok).toEqual([]);
+  });
+
+  it("holds the mite counts to whole numbers written plainly", () => {
+    expect(msgs({ miteBees: "1e3" })[0]).toMatch(/Bees sampled/);
+    expect(msgs({ miteBees: "300", miteCount: "9e0" })[0]).toMatch(/Mites counted/);
+    expect(msgs({ miteBees: "300", miteCount: "9" })).toEqual([]);
+  });
+});
+
+describe("getInputProblems: dates", () => {
+  const TODAY = "2026-10-28";
+  const dateMsgs = (date) => getInputProblems({ ...initialForm(), hiveId: "H1", date }, TODAY).map((p) => p.message);
+
+  it("accepts today and earlier dates", () => {
+    expect(dateMsgs("2026-10-28")).toEqual([]);
+    expect(dateMsgs("2026-10-13")).toEqual([]);
+    expect(dateMsgs("2000-01-01")).toEqual([]);
+  });
+
+  it("rejects a date in the future", () => {
+    expect(dateMsgs("2026-10-29")[0]).toMatch(/future/);
+    expect(dateMsgs("2099-01-01")[0]).toMatch(/future/);
+  });
+
+  it("rejects a date that is far too old to be right", () => {
+    expect(dateMsgs("1999-12-31")[0]).toMatch(/looks wrong/);
+    expect(dateMsgs("0001-01-01")[0]).toMatch(/looks wrong/);
+  });
+
+  it("rejects a date that doesn't exist", () => {
+    expect(dateMsgs("2026-02-30")[0]).toMatch(/real date/);
+    expect(dateMsgs("2026-13-01")[0]).toMatch(/real date/);
+    expect(dateMsgs("hello")[0]).toMatch(/real date/);
+  });
+
+  it("still asks for a date when it is blank, and names the field", () => {
+    expect(getInputProblems({ ...initialForm(), hiveId: "H1", date: "" }, TODAY)).toEqual([
+      { field: "date", message: "Date is required." },
+    ]);
+  });
+});
+
+describe("getInputProblems: limits", () => {
+  const f = (over) => ({ ...initialForm(), hiveId: "H1", ...over });
+  const msgs = (over) => getInputProblems(f(over)).map((p) => p.message);
+
+  it("allows temperatures right up to the limits, and refuses just beyond them", () => {
+    expect(msgs({ weatherTemp: "-30" })).toEqual([]);
+    expect(msgs({ weatherTemp: "50" })).toEqual([]);
+    expect(msgs({ weatherTemp: "-31" })[0]).toMatch(/Temp/);
+    expect(msgs({ weatherTemp: "51" })[0]).toMatch(/Temp/);
+  });
+
+  it("allows brood coverage of exactly 0 and 100, and refuses just beyond", () => {
+    expect(msgs({ broodPct: "0" })).toEqual([]);
+    expect(msgs({ broodPct: "100" })).toEqual([]);
+    expect(msgs({ broodPct: "100.1" })[0]).toMatch(/between 0 and 100/);
+    expect(msgs({ broodPct: "-0.1" })[0]).toMatch(/between 0 and 100/);
+  });
+
+  it("accepts a blank box as 'not filled in', but not a box of only spaces for a required field", () => {
+    expect(msgs({ broodFrames: "" })).toEqual([]);
+    expect(msgs({ broodFrames: "   " })).toEqual([]);
+    expect(getInputProblems({ ...f({}), date: "   " }, "2026-10-28")[0].message).toMatch(/real date/);
+  });
+});

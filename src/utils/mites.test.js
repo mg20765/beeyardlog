@@ -55,3 +55,15 @@ describe("isAtOrAboveThreshold", () => {
     expect(isAtOrAboveThreshold(null)).toBe(false);
   });
 });
+
+describe("mitesPer100: only plain whole numbers", () => {
+  it("rejects scientific and other odd notation", () => {
+    expect(mitesPer100("3e2", "9")).toBeNull();
+    expect(mitesPer100("300", "9e0")).toBeNull();
+    expect(mitesPer100("0x12", "1")).toBeNull();
+  });
+
+  it("still accepts plain digits, with spaces around them", () => {
+    expect(mitesPer100(" 300 ", " 9 ")).toBe(3);
+  });
+});

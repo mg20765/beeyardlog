@@ -5,6 +5,8 @@ export default function NotesSection({ form, set }) {
       <textarea
         className="hive-textarea"
         value={form.notes}
+        id="field-notes"
+        aria-label="Notes"
         onChange={set("notes")}
         placeholder="General observations…"
       />

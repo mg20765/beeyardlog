@@ -84,6 +84,8 @@
 .hive-input {
   /* 16px keeps iOS Safari from auto-zooming the page when a field is focused */
   font-size: 16px;
+  /* Tall enough for a gloved finger */
+  min-height: 46px;
   padding: 9px 10px;
   border: 1px solid var(--input-border);
   border-radius: 8px;
@@ -146,7 +148,7 @@
 
 .hive-radio-group {
   display: flex;
-  gap: 12px;
+  gap: 4px;
   flex-wrap: wrap;
   margin-top: 4px;
 }
@@ -154,17 +156,22 @@
 .hive-radio-item {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 13px;
+  gap: 8px;
+  min-height: 48px;
+  font-size: 14px;
   cursor: pointer;
   color: var(--text);
-  padding: 4px 0;
+  padding: 0 6px 0 4px;
+  border-radius: 8px;
+  -webkit-tap-highlight-color: rgba(29, 158, 117, 0.25);
 }
 
 .hive-radio-item input {
   accent-color: var(--green);
-  width: 17px;
-  height: 17px;
+  width: 26px;
+  height: 26px;
+  margin: 0;
+  flex-shrink: 0;
 }
 
 /* ── Checkbox grid ──────────────────────────────── */
@@ -172,23 +179,28 @@
 .hive-chk-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: 6px;
 }
 
+/* The whole row is the tap target: at least 48px tall for gloved hands. */
 .hive-chk-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 13px;
+  gap: 10px;
+  min-height: 48px;
+  font-size: 14px;
   cursor: pointer;
   color: var(--text);
-  padding: 4px 0;
+  padding: 0 6px;
+  border-radius: 8px;
+  -webkit-tap-highlight-color: rgba(29, 158, 117, 0.25);
 }
 
 .hive-chk-item input[type="checkbox"] {
   accent-color: var(--green);
-  width: 18px;
-  height: 18px;
+  width: 26px;
+  height: 26px;
+  margin: 0;
   flex-shrink: 0;
 }
 
@@ -224,15 +236,16 @@
 
 .hive-lvl-group {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   margin-top: 6px;
 }
 
 .hive-lvl-btn {
+  min-height: 48px;
   padding: 9px 14px;
   border-radius: 8px;
   border: 1px solid var(--input-border);
-  font-size: 13px;
+  font-size: 15px;
   cursor: pointer;
   background: var(--bg);
   color: var(--text);
@@ -276,6 +289,7 @@
 
 .hive-btn-add {
   width: 100%;
+  min-height: 52px;
   padding: 12px;
   background: var(--green);
   color: #fff;
@@ -290,6 +304,7 @@
 
 .hive-btn-export {
   width: 100%;
+  min-height: 52px;
   padding: 12px;
   background: var(--blue);
   color: #fff;
@@ -308,11 +323,12 @@
 }
 
 .hive-btn-outline {
+  min-height: 48px;
   padding: 9px;
   background: transparent;
   border: 1px solid var(--input-border);
   border-radius: 12px;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--muted);
   cursor: pointer;
   font-family: var(--font);
@@ -340,11 +356,12 @@
 
 .hive-btn-clear {
   width: 100%;
+  min-height: 48px;
   padding: 9px;
   background: transparent;
   border: 1px solid var(--input-border);
   border-radius: 12px;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--muted);
   cursor: pointer;
   font-family: var(--font);
@@ -363,6 +380,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  min-height: 52px;
   padding: 8px 0;
 }
 
@@ -442,15 +460,24 @@
   margin-left: 6px;
 }
 
+/* A 48 x 48px target; the negative margins keep the log rows compact. */
 .hive-del-btn {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
   background: none;
   border: none;
-  color: #bbb;
+  color: #999;
   cursor: pointer;
-  font-size: 18px;
-  padding: 10px 12px;
-  margin: -10px -12px;
-  border-radius: 6px;
+  font-size: 20px;
+  padding: 0;
+  margin: -8px -6px -8px 0;
+  border-radius: 8px;
+}
+
+.hive-del-btn:active {
+  background: #fdecea;
+  color: #c0392b;
 }
 
 .hive-empty-state {
@@ -527,6 +554,7 @@
 
 /* Lines in the "Please check" box are buttons that jump to the field. */
 .hive-problem-link {
+  min-height: 44px;
   background: none;
   border: 0;
   padding: 2px 0;
@@ -552,4 +580,46 @@
 
 .hive-edit-open {
   margin-top: 12px;
+}
+
+/* The log row: one control that opens the entry, and the delete button beside it. */
+.hive-log-toggle {
+  flex: 1;
+  min-width: 0;
+  display: block;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.hive-log-title,
+.hive-log-sub {
+  display: block;
+}
+
+.hive-log-search {
+  margin-bottom: 8px;
+}
+
+/* Mite result on a log row; red at or above the treatment line. */
+.hive-mite-chip {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 8px;
+  border-radius: 99px;
+  background: var(--badge-bg);
+  color: var(--badge-text);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.hive-mite-chip--high {
+  background: #fdecea;
+  color: #8a2b20;
+  border: 1px solid #f3c1bb;
 }

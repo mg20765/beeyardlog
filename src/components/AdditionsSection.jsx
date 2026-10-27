@@ -44,7 +44,7 @@ export default function AdditionsSection({ form, set, setCheck }) {
           <p className="hive-label">What's going to storage?</p>
           <div className="hive-row2" style={{ marginTop: 6 }}>
             <div className="hive-field">
-              <label className="hive-label">FD boxes</label>
+              <label className="hive-label" htmlFor="field-storageFdBoxes">FD boxes</label>
               <input
                 className="hive-input"
                 type="number"
@@ -57,7 +57,7 @@ export default function AdditionsSection({ form, set, setCheck }) {
               <FieldError name="storageFdBoxes" />
             </div>
             <div className="hive-field">
-              <label className="hive-label">3/4 boxes</label>
+              <label className="hive-label" htmlFor="field-storageThreeQuarterBoxes">3/4 boxes</label>
               <input
                 className="hive-input"
                 type="number"
@@ -83,10 +83,11 @@ export default function AdditionsSection({ form, set, setCheck }) {
             ))}
           </div>
           <div className="hive-field" style={{ marginTop: 8 }}>
-            <label className="hive-label">Other</label>
+            <label className="hive-label" htmlFor="field-storageOther">Other</label>
             <input
               className="hive-input"
               value={form.storageOther}
+              id="field-storageOther"
               onChange={set("storageOther")}
               placeholder="Specify…"
             />
@@ -96,10 +97,11 @@ export default function AdditionsSection({ form, set, setCheck }) {
 
       {form.movedApiary && (
         <div className="hive-field" style={{ marginTop: 10 }}>
-          <label className="hive-label">New apiary location</label>
+          <label className="hive-label" htmlFor="field-newApiaryLocation">New apiary location</label>
           <input
             className="hive-input"
             value={form.newApiaryLocation}
+            id="field-newApiaryLocation"
             onChange={set("newApiaryLocation")}
             placeholder="e.g. Riverside apiary"
           />
@@ -108,10 +110,11 @@ export default function AdditionsSection({ form, set, setCheck }) {
 
       <div className="hive-row2" style={{ marginTop: 10 }}>
         <div className="hive-field">
-          <label className="hive-label">New hive ID</label>
+          <label className="hive-label" htmlFor="field-newHiveId">New hive ID</label>
           <input
             className="hive-input"
             value={form.newHiveId}
+            id="field-newHiveId"
             onChange={set("newHiveId")}
             placeholder="e.g. H3"
           />

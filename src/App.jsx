@@ -32,6 +32,7 @@ export default function HiveLogbook() {
     goToField,
     needsBackupReminder,
     entriesSinceBackup,
+    correctionsSinceBackup,
     set,
     setCheck,
     addToLog,
@@ -82,6 +83,7 @@ export default function HiveLogbook() {
       <BackupReminder
         visible={needsBackupReminder}
         count={entriesSinceBackup}
+        corrections={correctionsSinceBackup}
         onBackup={backupToFile}
       />
 

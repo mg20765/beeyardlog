@@ -22,10 +22,11 @@ export default function TreatmentsSection({ form, set, setCheck }) {
         ))}
       </div>
       <div className="hive-field" style={{ marginTop: 10 }}>
-        <label className="hive-label">Other treatment</label>
+        <label className="hive-label" htmlFor="field-trtOther">Other treatment</label>
         <input
           className="hive-input"
           value={form.trtOther}
+          id="field-trtOther"
           onChange={set("trtOther")}
           placeholder="Specify…"
         />

@@ -19,7 +19,10 @@ export default function EntryEditor({ row, onSave, onCancel }) {
       setProblems(found);
       return;
     }
-    await onSave(edits);
+    // onSave gives back a message if the change couldn't be saved (for example
+    // the entry was deleted in another window), or nothing if it worked.
+    const problem = await onSave(edits);
+    if (problem) setProblems([{ field: null, message: problem }]);
   };
 
   return (

@@ -7,7 +7,7 @@ const DB_VERSION = 2;
 const STORE = "inspections";
 
 
-export const LEGACY_STORAGE_KEY = "hive_inspection_log";
+const LEGACY_STORAGE_KEY = "hive_inspection_log";
 
 let dbPromise;
 
@@ -90,9 +90,25 @@ export async function importInspections(rows) {
   return getAllInspections();
 }
 
-// Writes a changed row back over the saved one (matched by its id).
+// Thrown when an entry being changed has since been deleted (for example in
+// another open copy of the app). Writing it back would bring it back to life.
+export class EntryGoneError extends Error {
+  constructor() {
+    super("That entry no longer exists.");
+    this.name = "EntryGoneError";
+  }
+}
+
+// Writes a changed row back over the saved one (matched by its id), but only
+// if that entry still exists.
 export async function updateInspection(row) {
   const db = await getDb();
-  await db.put(STORE, row);
+  const tx = db.transaction(STORE, "readwrite");
+  if (!(await tx.store.get(row.id))) {
+    await tx.done;
+    throw new EntryGoneError();
+  }
+  await tx.store.put(row);
+  await tx.done;
   return row;
 }
