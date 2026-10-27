@@ -15,7 +15,9 @@ import {
   deleteInspection,
   clearInspections,
   importInspections,
+  updateInspection,
 } from "../db/hiveDb.js";
+import { applyEdits } from "../utils/editEntry.js";
 import { downloadBackup, readBackupFile } from "../utils/backup.js";
 import { loadDraft, saveDraft, clearDraft } from "../utils/draft.js";
 import { requestPersistentStorage } from "../utils/persist.js";
@@ -238,6 +240,22 @@ export default function useHiveLog() {
     clearDraft();
   };
 
+  // Saves corrections to a saved entry's typed fields. Returns true if it worked.
+  const updateEntry = async (id, edits) => {
+    const current = log.find((r) => r.id === id);
+    if (!current) return false;
+    const next = applyEdits(current, edits);
+    try {
+      await updateInspection(next);
+      setLog((prev) => prev.map((r) => (r.id === id ? next : r)));
+      return true;
+    } catch (err) {
+      console.warn("Could not update inspection:", err);
+      flashMessage("Couldn't save that change. Please try again.");
+      return false;
+    }
+  };
+
   const deleteEntry = async (id) => {
     try {
       await deleteInspection(id);
@@ -323,6 +341,7 @@ export default function useHiveLog() {
     draftRestored,
     discardDraft,
     deleteEntry,
+    updateEntry,
     clearLog,
     exportAll,
     backupToFile,

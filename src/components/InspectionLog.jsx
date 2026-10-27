@@ -1,4 +1,5 @@
 import { useState } from "react";
+import EntryEditor from "./EntryEditor.jsx";
 
 // Every column formToRow() can produce, in the order we want it displayed
 // when a log entry is expanded. Empty/false values are skipped at render
@@ -41,8 +42,9 @@ function hasValue(v) {
   return v !== "" && v !== false && v !== undefined && v !== null;
 }
 
-export default function InspectionLog({ log, loading, deleteEntry }) {
+export default function InspectionLog({ log, loading, deleteEntry, updateEntry }) {
   const [expandedId, setExpandedId] = useState(null);
+  const [editingId, setEditingId] = useState(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
   return (
@@ -129,7 +131,16 @@ export default function InspectionLog({ log, loading, deleteEntry }) {
                   </div>
                 </div>
               )}
-              {isOpen && (
+              {isOpen && editingId === r.id && (
+                <EntryEditor
+                  row={r}
+                  onCancel={() => setEditingId(null)}
+                  onSave={async (edits) => {
+                    if (await updateEntry(r.id, edits)) setEditingId(null);
+                  }}
+                />
+              )}
+              {isOpen && editingId !== r.id && (
                 <div className="hive-log-detail">
                   {details.length === 0 ? (
                     <p className="hive-log-detail-empty">
@@ -145,6 +156,13 @@ export default function InspectionLog({ log, loading, deleteEntry }) {
                       </div>
                     ))
                   )}
+                  <button
+                    type="button"
+                    className="hive-btn-outline hive-edit-open"
+                    onClick={() => setEditingId(r.id)}
+                  >
+                    Edit details
+                  </button>
                 </div>
               )}
               {i < log.length - 1 && <div className="hive-divider" />}

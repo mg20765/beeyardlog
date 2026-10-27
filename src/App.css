@@ -536,3 +536,20 @@
   text-decoration: underline;
   cursor: pointer;
 }
+
+/* Fixing a saved entry */
+.hive-edit {
+  margin: 8px 0 12px;
+  padding: 12px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.hive-edit .hive-field {
+  margin-bottom: 10px;
+}
+
+.hive-edit-open {
+  margin-top: 12px;
+}

@@ -40,6 +40,7 @@ export default function HiveLogbook() {
     draftRestored,
     discardDraft,
     deleteEntry,
+    updateEntry,
     clearLog,
     exportAll,
     backupToFile,
@@ -96,7 +97,12 @@ export default function HiveLogbook() {
         importMessage={importMessage}
       />
 
-      <InspectionLog log={log} loading={loading} deleteEntry={deleteEntry} />
+      <InspectionLog
+        log={log}
+        loading={loading}
+        deleteEntry={deleteEntry}
+        updateEntry={updateEntry}
+      />
     </div>
   );
 }

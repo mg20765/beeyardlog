@@ -24,7 +24,7 @@ Sample data only; the hives shown are made up.
 - **Doesn't lose your work.** A half-filled form is kept if the page reloads, deletes and "Clear log" ask first, and failed saves show an error instead of failing silently.
 - **Mite check.** Record an alcohol wash or sugar roll and get mites per 100 bees, with a clear hint when a count reaches the treatment threshold.
 - **Protects your data.** JSON backup and restore (with a reminder after 10 new entries), Excel export, and a request to the browser not to clear stored data when the phone runs low on space.
-- **Tested.** 100 unit tests (Vitest) and 40 end-to-end tests (Playwright) run on every push in GitHub Actions.
+- **Tested.** 115 unit tests (Vitest) and 50 end-to-end tests (Playwright) run on every push in GitHub Actions.
 
 ## How to use it
 
@@ -39,7 +39,7 @@ Sample data only; the hives shown are made up.
 1. Type a **Hive ID**. It's the only required field. Everything else is optional.
 2. Fill in whatever you checked: weather, condition, mite check, treatments (including the AFB check), feeding, additions, food stores, extraction and notes.
 3. Tap **+ Add to log**. If Temperament, Population, Queen sighted or Honey level are blank, you're asked once: **Go back** takes you to the first blank field, **Add anyway** saves it.
-4. The entry appears in the **Inspection log** at the bottom. Tap it to see every field, or tap ✕ to delete it (you're asked to confirm).
+4. The entry appears in the **Inspection log** at the bottom. Tap it to see every field. Tap **Edit details** to fix a spelling mistake or a typed value (Hive ID, Yard #, date, notes and the other typed boxes), or tap ✕ to delete it (you're asked to confirm). Ticks and choices can't be edited: delete the entry and add it again.
 
 If your phone reloads the page halfway through (a phone call, switching apps), your half-filled form comes back with a note. Tap **Discard draft** to start fresh.
 

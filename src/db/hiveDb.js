@@ -89,3 +89,10 @@ export async function importInspections(rows) {
   await tx.done;
   return getAllInspections();
 }
+
+// Writes a changed row back over the saved one (matched by its id).
+export async function updateInspection(row) {
+  const db = await getDb();
+  await db.put(STORE, row);
+  return row;
+}
