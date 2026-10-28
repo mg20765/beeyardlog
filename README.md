@@ -10,13 +10,17 @@ An offline-first hive inspection logbook for mobile and tablet. No signal needed
 
 Sample data only; the hives shown are made up.
 
-| Inspection form | Inspection log |
+| Inspection form | Mite check |
 | --- | --- |
-| <img src="docs/screenshots/form.png" alt="The BeeYardLog inspection form on a phone, with Hive details, Weather and Condition cards" width="300"> | <img src="docs/screenshots/log.png" alt="The inspection log with three entries, the first expanded to show every recorded field" width="300"> |
+| <img src="docs/screenshots/form.png" alt="The BeeYardLog inspection form on a phone: Yard # and Hive ID, then the Weather and Condition cards" width="300"> | <img src="docs/screenshots/mite.png" alt="The Mite check card: alcohol wash, 300 bees and 9 mites, showing 3 mites per 100 bees with a red note to consider treating" width="300"> |
 
-| Save check | Storage details |
+| Inspection log | Fixing an entry |
 | --- | --- |
-| <img src="docs/screenshots/warning.png" alt="A prompt saying the Temperament field was left blank, with Go back and Add anyway buttons" width="300"> | <img src="docs/screenshots/storage.png" alt="The Additions card with Removed to storage ticked, showing box counts and gear checkboxes" width="300"> |
+| <img src="docs/screenshots/log.png" alt="The inspection log, newest first, with a search box and a mite result on each row, red for the one over the treatment line" width="300"> | <img src="docs/screenshots/edit.png" alt="The Edit details panel for a saved entry, with Yard, Hive ID, date, temperature, mite counts and notes" width="300"> |
+
+| Checks before saving | Storage details |
+| --- | --- |
+| <img src="docs/screenshots/checks.png" alt="A brood coverage of 150 highlighted in red with the message that it must be between 0 and 100" width="300"> | <img src="docs/screenshots/storage.png" alt="The Additions card with Removed to storage ticked, showing box counts and gear checkboxes" width="300"> |
 
 ## Highlights
 
@@ -110,7 +114,7 @@ npx playwright install chromium   # one-off: download the test browser
 npm run test:e2e                  # starts the dev server and clicks through the app
 ```
 
-The e2e suite covers: add an inspection, Hive ID required, storage fields show, delete an entry, and data surviving a reload. Playwright starts the dev server itself, so you don't need `npm run dev` running first.
+The unit tests cover the pure logic (validation, mite maths, the backup reminder, building the Excel file, drafts, search and sorting, syncing between open copies). The end-to-end suite clicks through the real app: saving and validation, editing an entry, backup and restore, Excel export, working offline, two open copies staying in step, the date after midnight, search, accessibility, button sizes, and the content-security policy. Playwright starts the dev server itself, so you don't need `npm run dev` running first.
 
 ### Troubleshooting
 
@@ -125,87 +129,91 @@ Open the dev server URL on your phone/tablet browser (same wifi network, or use 
 
 ## What it does
 
-- **Inspection form**, organized into cards: Hive details, Weather, Condition, Treatments (varroa/mite meds + AFB check), Feeding, Additions, Food stores, Extraction, Notes.
-- **AFB (American Foulbrood) tracking** is split into three deliberate steps so it can't be gamed: "AFB check performed" (routine, tick every time), "AFB signs found" (the real alert, styled in red), and — only shown if signs are found — "Reported to authority (required within 7 days)".
-- **Inspection log** at the bottom, tap any entry to expand and see every field that was filled in (not just the 3-field summary).
-- **Validation before saving**: Hive ID is required (hard stop, can't save without it). Temperament, Population, Queen sighted, and Honey level are soft-checked — if any are blank you get a one-tap "Add anyway" or "Go back" (which scrolls straight to the first blank field).
-- **Export all to Excel** — produces a real `.xlsx` with every logged inspection, one column per field, ready to open in Excel/Sheets.
-- **Backup (JSON) / Restore backup** — a separate, additive safety net (not for viewing — that's what Excel export is for). Backup downloads a `.json` snapshot of the whole log; Restore reads one back in without wiping what's already there. Useful for moving your log to a new phone.
-- **Backup reminder banner** — appears once 10+ inspections have been logged since your last JSON backup, so data isn't only sitting on one device.
+- **Inspection form**, organised into cards: Hive details (Yard #, Hive ID, date), Weather, Condition, Mite check, Treatments (varroa treatments + AFB check), Feeding, Additions, Food stores, Extraction, Notes.
+- **AFB (American Foulbrood) tracking** is split into three deliberate steps so it can't be gamed: "AFB check performed" (routine, tick every time), "AFB signs found" (the real alert, styled in red), and, only shown if signs are found, "Reported to authority (required within 7 days)".
+- **Mite check** for alcohol wash or sugar roll: works out mites per 100 bees, flags a count at or above the treatment line, and records "Not done" when a visit skipped it.
+- **Checks before saving.** Hive ID is required. Clearly wrong values (brood coverage over 100, negative counts, oddly written numbers, impossible or future dates) are stopped: the screen jumps to the first problem and explains it beside the field. Temperament, Population, Queen sighted and Honey level are soft-checked with a one-tap "Add anyway".
+- **Inspection log**, newest first, with a search box once it has six or more entries. Tap an entry to see every field, or **Edit details** to correct a typed value. A mite result shows on each row, red at or above the line.
+- **Export all to Excel** produces a real `.xlsx`, one column per field, with real numbers and dates.
+- **Backup (JSON) / Restore backup** is a separate, additive safety net. Backup downloads a snapshot of the whole log; Restore adds a snapshot back without wiping what's there. A banner reminds you after 10 new or corrected entries.
 
 ## How data is stored
 
-All inspection data lives in **IndexedDB** (via the `idb` library), not localStorage — this matters at scale: localStorage caps out around 5MB per site (roughly 10,000 entries), which a busy commercial operation doing rounds every 3-4 weeks across thousands of hives could hit within a season. IndexedDB's practical ceiling is closer to hundreds of MB, so it scales from hobbyist to commercial without a rewrite.
+All inspection data lives in **IndexedDB** (via the `idb` library), not localStorage. This matters at scale: localStorage caps out around 5MB per site (roughly 10,000 entries), which a busy commercial operation doing rounds every 3-4 weeks across thousands of hives could hit within a season. IndexedDB's practical ceiling is closer to hundreds of MB, so it scales from hobbyist to commercial without a rewrite.
 
 If you have old data from before this switch (saved under `localStorage["hive_inspection_log"]`), it gets migrated into IndexedDB automatically, once, the first time the app loads.
 
-Two small pieces of data live in localStorage (not the log itself):
-- `hive_last_backup_id` — the id of the newest entry in your last JSON backup, used to work out the "N since backup" reminder. (Older versions stored a count in `hive_last_backup_count`; it is converted once automatically.)
-- `yardbook_form_draft` — the half-filled form, so it survives a page reload. It is removed when you save the entry or tap "Discard draft".
+If the app is open in two places at once (the installed app and a browser tab), they stay in step: each tells the other when the log changes, and each re-reads the log when it is shown again.
+
+A few small pieces of data live in localStorage (not the log itself):
+- `hive_last_backup_id`: the id of the newest entry in your last JSON backup, used to work out the "since backup" reminder. (Older versions stored a count in `hive_last_backup_count`; it is converted once automatically.)
+- `hive_edits_since_backup`: how many already-backed-up entries have been corrected since, because the backup file still holds the old version.
+- `yardbook_form_draft`: the half-filled form, so it survives a page reload. It is removed when you save the entry or tap "Discard draft". The key keeps the app's earlier working name on purpose, so drafts saved before the rename aren't lost.
 
 ## Project structure
 
 ```
 src/
-  App.jsx                  # top-level composition, orchestrates everything
-  App.css                  # shared design tokens + section/button/log styles
-  index.css                # global reset
-  main.jsx                 # React entry point
+  App.jsx                    # composes the page; holds no logic itself
+  App.css, index.css         # design tokens and styles
+  main.jsx                   # entry point; registers the service worker in production
 
-  NavBar/
-    Header.jsx / .css      # app title + "saved" pill
+  NavBar/Header.jsx          # app title + "saved" pill
 
-  components/
-    HiveDetailsSection.jsx
-    WeatherSection.jsx
-    ConditionSection.jsx
-    TreatmentsSection.jsx  # mite treatments + AFB check/signs/reported
-    FeedingSection.jsx     # syrup/dry feed/patties/nutrition boost
-    AdditionsSection.jsx
-    FoodStoresSection.jsx
-    ExtractionSection.jsx
+  components/                # one file per form card, plus the log and notices
+    HiveDetailsSection.jsx, WeatherSection.jsx, ConditionSection.jsx,
+    MiteCheckSection.jsx, TreatmentsSection.jsx, FeedingSection.jsx,
+    AdditionsSection.jsx, FoodStoresSection.jsx, ExtractionSection.jsx,
     NotesSection.jsx
-    InspectionLog.jsx      # expandable log list
-    ActionButtons.jsx      # add/export/backup/restore/clear
-    BackupReminder.jsx     # "N since backup" banner
-    MissingFieldsWarning.jsx
-    ui/
-      RadioGroup.jsx
-      LevelButtons.jsx     # High/Average/Low pill buttons
+    InspectionLog.jsx        # newest-first list, search, mite chips
+    EntryEditor.jsx          # "Edit details" panel
+    ActionButtons.jsx        # add / export / backup / restore / clear
+    BackupReminder.jsx, DraftNotice.jsx, MissingFieldsWarning.jsx,
+    InputProblems.jsx, FieldError.jsx, problemsContext.js
+    ui/                      # RadioGroup, LevelButtons
 
-  hooks/
-    useHiveLog.js           # all state, validation, and actions live here
+  hooks/useHiveLog.js        # all state and actions: form, log, drafts, sync, backup
 
-  db/
-    hiveDb.js               # IndexedDB layer (via idb) + legacy migration
+  db/hiveDb.js               # IndexedDB layer (via idb) + legacy migration
 
-  utils/
-    hiveForm.js              # initialForm() shape + formToRow() column mapping
-    backup.js                 # JSON backup download/read
-    omitId.js
+  utils/                     # pure logic, each with unit tests
+    hiveForm.js              # form shape + saved-row mapping
+    validation.js            # checks before saving (numbers, dates, mites)
+    mites.js                 # mites per 100 bees, treatment line
+    editEntry.js             # which fields can be corrected, and how
+    logView.js               # newest-first sorting and search
+    excel.js, exportRows.js  # the Excel export (real numbers and dates)
+    backup.js, backupReminder.js, draft.js, persist.js, sync.js, date.js, omitId.js
+
+public/                      # service worker (sw.js), manifest, icons
+tests/                       # Playwright end-to-end tests
+scripts/                     # icon generation
+docs/screenshots/            # README images (made-up sample data)
+.github/workflows/ci.yml     # lint, unit tests, build and end-to-end tests on every push
 ```
 
-`App.jsx` only composes components and wires props from `useHiveLog()` — it holds no logic itself. If you want to change what a field does, `useHiveLog.js` and `hiveForm.js` are the two files that matter; if you want to change what a section looks like, its component in `components/` is the only file you need.
+`App.jsx` only composes components and wires props from `useHiveLog()`. If you want to change what a field does, `useHiveLog.js`, `hiveForm.js` and `validation.js` are the files that matter; to change how a section looks, its component in `components/` is the only file you need.
 
 ## Known limitations / things to watch
 
-- **Mobile browser data isn't automatically backed up anywhere.** IndexedDB survives app updates and phone restarts, but not a factory reset, "clear browsing data," or switching browsers/phones. The backup reminder exists because of this — encourage regular JSON backups, and get that file off the phone (cloud storage, email) since a backup sitting only in Downloads dies with the phone too.
-- **No multi-device sync.** Each phone/browser has its own independent log. If a commercial operation has multiple people logging, each device's data is separate — combine them via Restore backup on one device, or just keep separate exports.
+- **Mobile browser data isn't automatically backed up anywhere.** IndexedDB survives app updates and phone restarts, but not a factory reset, "clear browsing data," or switching browsers/phones. The backup reminder exists because of this: encourage regular JSON backups, and get that file off the phone (cloud storage, email), since a backup sitting only in Downloads dies with the phone too.
+- **No sync between devices.** Each phone/browser has its own independent log. (Two open copies on the *same* phone do stay in step.) If several people log for one operation, each device's data is separate: combine them with Restore backup on one device, or keep separate exports.
+- **Tested on Android (Chrome) and desktop browsers; iPhone Safari testing is still to do.** Installing and offline use may behave differently on iOS. Safari can clear a website's stored data after about a week of not being used, unless the app has been added to the Home Screen, so on an iPhone keep it on the Home Screen and back up regularly.
 - **AFB reporting deadlines vary by region.** The "7 days" language matches NZ's notifiable-disease requirement; adjust the label in `TreatmentsSection.jsx` if a different jurisdiction's rule applies.
+- **The mite treatment line is fixed at 3 per 100 bees** (a constant in `src/utils/mites.js`). It is a reminder, not advice.
 
-## Ideas discussed but not (yet) built
+## Ideas for later
 
-- Switching the storage layer to Dexie.js instead of `idb`, for built-in filtering/search (e.g. "show me hive H23's history"). Not needed yet since even 20,000+ rows filter fast enough in plain JS at this app's scale — worth revisiting if a search/filter UI gets requested.
-- Voice/spoken reminders for hands-busy moments (gloves on, mid-inspection). Skipped for the backup reminder specifically since that's a post-inspection nudge, not needed mid-task — but a real option if a "confirm save" voice prompt is ever wanted while hands are full.
+- A "Summary" sheet in the Excel export (entries per hive, latest mite result).
+- The mite treatment line as a setting rather than a constant.
+- Undo for deleting an entry, and a warning for a duplicate Hive ID on the same date.
+- A "new version available, reload" prompt when the app updates.
+- Voice or spoken reminders for hands-busy moments (gloves on, mid-inspection).
+- A two-column layout for landscape tablets.
 
 ## A note on dependencies
 
-`npm audit` reports two known issues in the `xlsx` (SheetJS) package, which BeeYardLog uses for **Export all to Excel**:
-
-- a prototype-pollution issue ([GHSA-4r6h-8v6p-xvw6](https://github.com/advisories/GHSA-4r6h-8v6p-xvw6)), which the advisory says affects **reading** crafted spreadsheet files and not export-only use;
-- a regular-expression denial-of-service issue ([GHSA-5pgg-2g8v-p4x9](https://github.com/advisories/GHSA-5pgg-2g8v-p4x9)).
-
-BeeYardLog only **creates** spreadsheets from your own data. It never opens or parses one (Restore uses JSON backups), so these issues don't apply to how it uses the library. The fixed versions are published only on SheetJS's own site, not on npm, so `npm audit` can't offer an upgrade. Moving to the SheetJS-hosted build is on the to-do list.
+The Excel export uses SheetJS (`xlsx`). The copy on npm is out of date (0.18.5, with known security advisories), so BeeYardLog installs the current release (0.20.3) from SheetJS's own site, as their documentation recommends, and `npm audit` is clean. It only **creates** spreadsheets from your own data and never opens one (Restore uses JSON backups).
 
 ## Licence
 

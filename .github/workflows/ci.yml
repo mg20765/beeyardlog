@@ -1,8 +1,12 @@
 name: CI
 
 on:
+  # Test every push to the two long-lived branches, and every pull request into
+  # main, so a branch with a pull request is not tested twice.
   push:
+    branches: [main, develop]
   pull_request:
+    branches: [main]
 
 # The build only needs to read the code, so it gets no more than that.
 permissions:
