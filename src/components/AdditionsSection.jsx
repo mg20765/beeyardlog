@@ -49,6 +49,7 @@ export default function AdditionsSection({ form, set, setCheck }) {
                 className="hive-input"
                 type="number"
                 min="0"
+                inputMode="numeric"
                 id="field-storageFdBoxes"
                 value={form.storageFdBoxes}
                 onChange={set("storageFdBoxes")}
@@ -62,6 +63,7 @@ export default function AdditionsSection({ form, set, setCheck }) {
                 className="hive-input"
                 type="number"
                 min="0"
+                inputMode="numeric"
                 id="field-storageThreeQuarterBoxes"
                 value={form.storageThreeQuarterBoxes}
                 onChange={set("storageThreeQuarterBoxes")}

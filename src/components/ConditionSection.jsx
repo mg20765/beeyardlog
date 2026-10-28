@@ -22,6 +22,7 @@ export default function ConditionSection({ form, set }) {
             type="number"
             min="0"
             max="100"
+            inputMode="decimal"
             id="field-broodPct"
             value={form.broodPct}
             onChange={set("broodPct")}
@@ -35,6 +36,7 @@ export default function ConditionSection({ form, set }) {
             className="hive-input"
             type="number"
             min="0"
+            inputMode="numeric"
             id="field-broodFrames"
             value={form.broodFrames}
             onChange={set("broodFrames")}

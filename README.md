@@ -29,7 +29,7 @@ Sample data only; the hives shown are made up.
 - **Mite check.** Record an alcohol wash or sugar roll and get mites per 100 bees, with a clear hint when a count reaches the treatment threshold.
 - **Easy to scan.** The log lists the newest entry first, can be searched once it grows, and flags a mite count that has reached the treatment line.
 - **Protects your data.** JSON backup and restore (with a reminder after 10 new entries), Excel export, and a request to the browser not to clear stored data when the phone runs low on space.
-- **Tested.** 176 unit tests (Vitest) and 94 end-to-end tests (Playwright) run on every push in GitHub Actions.
+- **Tested.** 179 unit tests (Vitest) and 99 end-to-end tests (Playwright) run on every push in GitHub Actions.
 
 ## How to use it
 
@@ -214,6 +214,10 @@ docs/screenshots/            # README images (made-up sample data)
 ## A note on dependencies
 
 The Excel export uses SheetJS (`xlsx`). The copy on npm is out of date (0.18.5, with known security advisories), so BeeYardLog installs the current release (0.20.3) from SheetJS's own site, as their documentation recommends, and `npm audit` is clean. It only **creates** spreadsheets from your own data and never opens one (Restore uses JSON backups).
+
+## Thanks
+
+Thank you to Mel and Levi for testing BeeYardLog on iPhone (an iPhone 13 mini and an iPhone 15) and for telling me honestly what felt right and what didn't. Their feedback on button sizes and the number pad shaped the app.
 
 ## Licence
 
