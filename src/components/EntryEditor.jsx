@@ -48,7 +48,7 @@ export default function EntryEditor({ row, onSave, onCancel }) {
               id={`edit-${f.name}`}
               className="hive-input"
               type={f.type}
-              inputMode={f.type === "number" ? "decimal" : undefined}
+              inputMode={f.inputMode}
               value={edits[f.name]}
               onChange={change(f.name)}
             />

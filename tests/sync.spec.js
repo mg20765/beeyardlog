@@ -109,7 +109,9 @@ test("a deleted entry can't be brought back by editing it in a copy that missed 
 
   // The entry leaves the list, and a message says why (it can't stay in the
   // edit panel, because that goes away with the entry).
-  await expect(p2.getByText(/deleted in another window/)).toBeVisible();
+  // The banner is the message that always stays; while the edit panel is still
+  // open for a moment it repeats the text, so name the banner.
+  await expect(p2.locator(".hive-import-msg")).toContainText("deleted in another window");
   await expect(badge(p2)).toHaveText("0");
   expect(await stored(p1)).toEqual([]); // still gone
 });

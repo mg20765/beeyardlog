@@ -11,6 +11,7 @@ export default function ExtractionSection({ form, set }) {
             className="hive-input"
             type="number"
             min="0"
+            inputMode="numeric"
             id="field-supersRemoved"
             value={form.supersRemoved}
             onChange={set("supersRemoved")}
@@ -25,6 +26,7 @@ export default function ExtractionSection({ form, set }) {
             type="number"
             min="0"
             step="0.1"
+            inputMode="decimal"
             id="field-honeyKg"
             value={form.honeyKg}
             onChange={set("honeyKg")}

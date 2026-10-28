@@ -171,3 +171,36 @@ describe("getEditProblems: more cases", () => {
     expect(fields).toContain("broodPct");
   });
 });
+
+describe("editableFields: which pad a number box should open", () => {
+  const byName = (r) => Object.fromEntries(editableFields(r).map((f) => [f.name, f.inputMode]));
+
+  it("asks for the whole-number pad for counts, and the decimal pad where a point is needed", () => {
+    const r = row({
+      "Temp (°C)": "17",
+      "Brood Coverage %": "80",
+      "Brood Frames": "7",
+      "Honey (kg)": "12.5",
+      "Supers Removed": "2",
+    });
+    expect(byName(r)).toMatchObject({
+      weatherTemp: "decimal",
+      broodPct: "decimal",
+      broodFrames: "numeric",
+      honeyKg: "decimal",
+      supersRemoved: "numeric",
+    });
+  });
+
+  it("leaves text boxes on the normal keyboard", () => {
+    const names = byName(row());
+    expect(names.hiveId).toBeUndefined();
+    expect(names.yardNo).toBeUndefined();
+    expect(names.notes).toBeUndefined();
+  });
+
+  it("asks for the whole-number pad for the mite counts", () => {
+    const r = row({ "Mite Method": "Alcohol wash", "Bees Sampled": "300", "Mites Counted": "9" });
+    expect(byName(r)).toMatchObject({ miteBees: "numeric", miteCount: "numeric" });
+  });
+});

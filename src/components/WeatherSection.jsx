@@ -11,6 +11,7 @@ export default function WeatherSection({ form, set }) {
         <label className="hive-label" htmlFor="field-weatherTemp">Temp (°C)</label>
         <input
           className="hive-input"
+          inputMode="decimal"
           id="field-weatherTemp"
           type="number"
           value={form.weatherTemp}
