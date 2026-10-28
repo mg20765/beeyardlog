@@ -2,7 +2,9 @@
 
 [![CI](https://github.com/mg20765/beeyardlog/actions/workflows/ci.yml/badge.svg)](https://github.com/mg20765/beeyardlog/actions/workflows/ci.yml)
 
-An offline-first hive inspection logbook for mobile and tablet. No signal needed, no account, no server — everything lives on the device it's used on. Built for beekeepers ranging from a 2-hive hobbyist to a 2,000-hive commercial operation.
+I'm a beekeeper, and I built BeeYardLog because I kept running out of phone signal in the yard and my paper notes got messy.
+
+It's an offline-first hive inspection logbook for mobile and tablet. No signal needed, no account, no server — everything lives on the device it's used on. Built for beekeepers ranging from a 2-hive hobbyist to a 2,000-hive commercial operation.
 
 **Live app:** https://hive-logbook-maria.surge.sh (open it on a phone and use "Add to Home Screen").
 
