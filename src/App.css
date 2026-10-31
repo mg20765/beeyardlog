@@ -623,3 +623,59 @@
   color: #8a2b20;
   border: 1px solid #f3c1bb;
 }
+
+/* ── Big touch screens (tablets) ─────────────────── */
+/* The tablet tester preferred the bigger sizing (60px rows, 32px ticks, 54px
+   boxes). It only applies to a big screen you touch: phones, even turned
+   sideways, and a desktop with a mouse keep the medium sizing above. This block
+   comes last so it wins over the rules it adjusts. */
+@media (min-width: 768px) and (min-height: 600px) and (pointer: coarse) {
+  .hive-input {
+    font-size: 17px;
+    min-height: 54px;
+  }
+
+  .hive-radio-item,
+  .hive-chk-item {
+    min-height: 60px;
+    font-size: 17px;
+  }
+
+  .hive-radio-item input,
+  .hive-chk-item input[type="checkbox"] {
+    width: 32px;
+    height: 32px;
+  }
+
+  .hive-lvl-btn {
+    min-height: 60px;
+    font-size: 17px;
+  }
+
+  .hive-btn-add,
+  .hive-btn-export {
+    min-height: 60px;
+    font-size: 17px;
+  }
+
+  .hive-btn-outline,
+  .hive-btn-clear {
+    min-height: 60px;
+    font-size: 16px;
+  }
+
+  .hive-log-row {
+    min-height: 60px;
+  }
+
+  .hive-del-btn {
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+    margin: -12px -6px -12px 0;
+  }
+
+  .hive-problem-link {
+    min-height: 52px;
+  }
+}
