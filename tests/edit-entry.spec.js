@@ -45,6 +45,9 @@ test("the fix is still there after a reload", async ({ page }) => {
   await openEdit(page, "H1");
   await page.locator("#edit-yardNo").fill("Y9");
   await page.getByRole("button", { name: "Save changes" }).click();
+  // Wait until the save has finished (the edit panel closes) before reloading,
+  // otherwise the reload can beat the write to the database on a busy computer.
+  await expect(page.locator(".hive-edit")).toHaveCount(0);
 
   await page.reload();
   await page.locator(".hive-log-row", { hasText: "H1" }).click();
