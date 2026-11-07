@@ -6,7 +6,7 @@ I'm a beekeeper, and I built BeeYardLog because I kept running out of phone sign
 
 It's an offline-first hive inspection logbook for mobile and tablet. No signal needed, no account, no server — everything lives on the device it's used on. Built for beekeepers ranging from a 2-hive hobbyist to a 2,000-hive commercial operation.
 
-**Live app:** https://hive-logbook-maria.surge.sh (open it on a phone and use "Add to Home Screen").
+**Live app:** https://beeyardlog.surge.sh (open it on a phone and use "Add to Home Screen").
 
 ## Screenshots
 
@@ -31,13 +31,13 @@ Sample data only; the hives shown are made up.
 - **Mite check.** Record an alcohol wash or sugar roll and get mites per 100 bees, with a clear hint when a count reaches the treatment threshold.
 - **Easy to scan.** The log lists the newest entry first, can be searched once it grows, and flags a mite count that has reached the treatment line.
 - **Protects your data.** JSON backup and restore (with a reminder after 10 new entries), Excel export, and a request to the browser not to clear stored data when the phone runs low on space.
-- **Tested.** 179 unit tests (Vitest) and 99 end-to-end tests (Playwright) run on every push in GitHub Actions.
+- **Tested.** 183 unit tests (Vitest) and 110 end-to-end tests (Playwright) run on every push in GitHub Actions.
 
 ## How to use it
 
 ### Put it on your phone
 
-1. Open https://hive-logbook-maria.surge.sh once **with signal**.
+1. Open https://beeyardlog.surge.sh once **with signal**.
 2. **iPhone (Safari):** tap Share, then **Add to Home Screen**. **Android (Chrome):** tap the ⋮ menu, then **Add to Home screen** or **Install app**.
 3. Open it from the new icon. From now on it works with **no signal**.
 
