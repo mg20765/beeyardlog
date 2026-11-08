@@ -11,6 +11,7 @@ import FoodStoresSection from "./components/FoodStoresSection.jsx";
 import ExtractionSection from "./components/ExtractionSection.jsx";
 import NotesSection from "./components/NotesSection.jsx";
 import InspectionLog from "./components/InspectionLog.jsx";
+import HiveStatusList from "./components/HiveStatusList.jsx";
 import ActionButtons from "./components/ActionButtons.jsx";
 import BackupReminder from "./components/BackupReminder.jsx";
 import DraftNotice from "./components/DraftNotice.jsx";
@@ -98,6 +99,8 @@ export default function HiveLogbook() {
         count={log.length}
         importMessage={importMessage}
       />
+
+      <HiveStatusList log={log} />
 
       <InspectionLog
         log={log}
