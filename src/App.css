@@ -734,3 +734,29 @@
   padding: 2px 8px;
   border-radius: 99px;
 }
+
+/* Gear checklist. */
+.hive-gear {
+  margin-bottom: 16px;
+}
+
+.hive-gear-summary {
+  cursor: pointer;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+}
+
+.hive-gear-group {
+  margin-bottom: 8px;
+}
+
+.hive-gear-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.hive-gear-add {
+  margin: 12px 0;
+}

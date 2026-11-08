@@ -12,6 +12,7 @@ import ExtractionSection from "./components/ExtractionSection.jsx";
 import NotesSection from "./components/NotesSection.jsx";
 import InspectionLog from "./components/InspectionLog.jsx";
 import HiveStatusList from "./components/HiveStatusList.jsx";
+import GearList from "./components/GearList.jsx";
 import ActionButtons from "./components/ActionButtons.jsx";
 import BackupReminder from "./components/BackupReminder.jsx";
 import DraftNotice from "./components/DraftNotice.jsx";
@@ -101,6 +102,8 @@ export default function HiveLogbook() {
       />
 
       <HiveStatusList log={log} />
+
+      <GearList />
 
       <InspectionLog
         log={log}
