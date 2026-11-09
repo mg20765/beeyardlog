@@ -59,6 +59,10 @@ export default function HiveLogbook() {
     <div className="hive-app">
       <Header justSaved={justSaved} />
 
+      <HiveStatusList log={log} />
+
+      <GearList />
+
       <DraftNotice visible={draftRestored} onDiscard={discardDraft} />
 
       <ProblemsContext.Provider value={problemByField}>
@@ -100,10 +104,6 @@ export default function HiveLogbook() {
         count={log.length}
         importMessage={importMessage}
       />
-
-      <HiveStatusList log={log} />
-
-      <GearList />
 
       <InspectionLog
         log={log}

@@ -80,3 +80,9 @@ test("the gear list does not touch the inspection log", async ({ page }) => {
   await expect(page.getByText("No inspections logged yet")).toBeVisible();
   await expect(page.getByRole("button", { name: /backup/i }).first()).toBeDisabled();
 });
+
+test("the gear list sits above the inspection form, so it can be used before a trip", async ({ page }) => {
+  const gear = await page.getByText("Gear checklist", { exact: true }).boundingBox();
+  const form = await page.getByPlaceholder("e.g. Y2").boundingBox();
+  expect(gear.y).toBeLessThan(form.y);
+});

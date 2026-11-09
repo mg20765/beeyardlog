@@ -74,3 +74,12 @@ test("the limit can be changed, and is remembered", async ({ page }) => {
   await expect(page.getByLabel("Warn me after")).toHaveValue("14");
   await expect(page.getByRole("status")).toContainText("1 hive not checked in 2+ weeks");
 });
+
+test("the hive list sits above the form, with the gear list under it", async ({ page }) => {
+  await saveEntry(page, { yard: "Y1", hive: "H1", date: "2026-10-01" });
+  const status = await page.locator(".hive-status").boundingBox();
+  const gear = await page.getByText("Gear checklist", { exact: true }).boundingBox();
+  const form = await page.getByPlaceholder("e.g. Y2").boundingBox();
+  expect(status.y).toBeLessThan(gear.y);
+  expect(gear.y).toBeLessThan(form.y);
+});
