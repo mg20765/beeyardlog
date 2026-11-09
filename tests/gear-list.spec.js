@@ -86,3 +86,19 @@ test("the gear list sits above the inspection form, so it can be used before a t
   const form = await page.getByPlaceholder("e.g. Y2").boundingBox();
   expect(gear.y).toBeLessThan(form.y);
 });
+
+test("the gear list opens from a proper button that says whether it is open", async ({ page }) => {
+  const button = page.getByRole("button", { name: "Gear checklist" });
+  await expect(button).toBeVisible();
+  await expect(button).toHaveAttribute("aria-expanded", "false");
+  const box = await button.boundingBox();
+  expect(box.height).toBeGreaterThanOrEqual(48);
+
+  await button.click();
+  await expect(button).toHaveAttribute("aria-expanded", "true");
+  await expect(page.getByRole("checkbox", { name: "Smoker", exact: true })).toBeVisible();
+
+  await button.click();
+  await expect(button).toHaveAttribute("aria-expanded", "false");
+  await expect(page.getByRole("checkbox", { name: "Smoker", exact: true })).toBeHidden();
+});

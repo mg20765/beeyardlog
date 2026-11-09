@@ -740,11 +740,13 @@
   margin-bottom: 16px;
 }
 
-.hive-gear-summary {
-  cursor: pointer;
-  min-height: 48px;
+.hive-gear-toggle {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 10px;
+  font-weight: 600;
 }
 
 .hive-gear-group {
