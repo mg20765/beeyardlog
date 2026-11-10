@@ -762,3 +762,63 @@
 .hive-gear-add {
   margin: 12px 0;
 }
+
+/* Expiry dates: the warning at the top and the list where dates are set. */
+.hive-expiry-banner {
+  background: #fff4d6;
+  border: 1px solid #ecd28a;
+  color: #6b4a00;
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.hive-expiry-banner--expired {
+  background: #fdecea;
+  border-color: #f1b8b2;
+  color: #9a2a1f;
+}
+
+.hive-expiry-title {
+  margin: 0 0 4px;
+  font-weight: 700;
+}
+
+.hive-expiry-banner ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.hive-expiry-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--badge-bg);
+}
+
+.hive-expiry-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 140px;
+}
+
+.hive-expiry-name {
+  font-weight: 600;
+}
+
+.hive-expiry-when {
+  font-size: 12px;
+  color: var(--label);
+}
+
+.hive-expiry-row--expired .hive-expiry-when {
+  color: #9a2a1f;
+  font-weight: 700;
+}
+
+.hive-expiry-row .hive-input {
+  flex: 0 1 170px;
+}

@@ -53,7 +53,6 @@ export const GEAR = {
       items: [
         item("water", "Water to drink"),
         item("sun", "Sunscreen and hat"),
-        item("epipen", "EpiPen (check the expiry date)"),
         item("first-aid", "First-aid kit"),
       ],
     },
@@ -79,14 +78,21 @@ const MAX_NAME = 40;
 export const emptyGear = () => ({ ticked: [], custom: { yard: [], extraction: [] } });
 
 // The built-in groups, then the beekeeper's own items as a last group.
-export function groupsFor(mode, gear) {
+const EPIPEN_ITEM = item("epipen", "EpiPen (check the expiry date)");
+
+// `options.epipen` adds the EpiPen reminder to the yard day list, for people
+// who carry one. Not everyone does, so it is not part of the built-in list.
+export function groupsFor(mode, gear, options = {}) {
   const own = gear.custom[mode] ?? [];
-  const groups = GEAR[mode].map((g) => ({ ...g, own: false }));
+  const groups = GEAR[mode].map((g) => {
+    const addPen = options.epipen && mode === "yard" && g.title === "Looking after yourself";
+    return { ...g, items: addPen ? [...g.items, EPIPEN_ITEM] : g.items, own: false };
+  });
   return own.length > 0 ? [...groups, { title: "Your own items", items: own, own: true }] : groups;
 }
 
-export function allItems(mode, gear) {
-  return groupsFor(mode, gear).flatMap((g) => g.items);
+export function allItems(mode, gear, options) {
+  return groupsFor(mode, gear, options).flatMap((g) => g.items);
 }
 
 export function toggleTick(gear, id) {
@@ -115,8 +121,8 @@ export function removeCustom(gear, mode, id) {
 // A fresh trip: everything unticked, your own items kept.
 export const startNewTrip = (gear) => ({ ...gear, ticked: [] });
 
-export function progress(mode, gear) {
-  const items = allItems(mode, gear);
+export function progress(mode, gear, options) {
+  const items = allItems(mode, gear, options);
   return { done: items.filter((i) => gear.ticked.includes(i.id)).length, total: items.length };
 }
 
