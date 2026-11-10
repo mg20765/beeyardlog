@@ -53,6 +53,7 @@ export const GEAR = {
       items: [
         item("water", "Water to drink"),
         item("sun", "Sunscreen and hat"),
+        item("epipen", "EpiPen (check the expiry date)"),
         item("first-aid", "First-aid kit"),
       ],
     },

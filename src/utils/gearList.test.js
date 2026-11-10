@@ -40,9 +40,14 @@ describe("the built-in lists", () => {
 
   it("covers the yard basics, supers, treatments and gloves", () => {
     const yard = labels("yard").join(" | ").toLowerCase();
-    for (const word of ["smoker", "hive tool", "gloves", "supers", "treatment", "water"]) {
+    for (const word of ["smoker", "hive tool", "gloves", "supers", "treatment", "water", "epipen"]) {
       expect(yard, word).toContain(word);
     }
+  });
+
+  it("reminds you to check the EpiPen's expiry date", () => {
+    const epipen = allItems("yard", emptyGear()).find((i) => /epipen/i.test(i.label));
+    expect(epipen?.label).toMatch(/expiry/i);
   });
 
   it("gives every item its own id", () => {
