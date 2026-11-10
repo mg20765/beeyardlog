@@ -17,7 +17,7 @@ const MODES = [
 
 // What to pack, ticked off as it goes in the truck. Kept on the phone, apart
 // from the inspection records.
-export default function GearList() {
+export default function GearList({ epipen = false }) {
   const [gear, setGear] = useState(loadGear);
   const [mode, setMode] = useState("yard");
   const [draft, setDraft] = useState("");
@@ -28,7 +28,8 @@ export default function GearList() {
     saveGear(next);
   };
 
-  const { done, total } = progress(mode, gear);
+  const options = { epipen };
+  const { done, total } = progress(mode, gear, options);
 
   const submit = (e) => {
     e.preventDefault();
@@ -68,7 +69,7 @@ export default function GearList() {
           {done} of {total} packed
         </p>
 
-        {groupsFor(mode, gear).map((group) => (
+        {groupsFor(mode, gear, options).map((group) => (
           <div key={group.title} className="hive-gear-group">
             <p className="hive-label">{group.title}</p>
             {group.items.map((i) => (

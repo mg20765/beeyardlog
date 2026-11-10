@@ -1,3 +1,4 @@
+import { useState } from "react";
 import "./App.css";
 import Header from "./NavBar/Header.jsx";
 import HiveDetailsSection from "./components/HiveDetailsSection.jsx";
@@ -13,6 +14,8 @@ import NotesSection from "./components/NotesSection.jsx";
 import InspectionLog from "./components/InspectionLog.jsx";
 import HiveStatusList from "./components/HiveStatusList.jsx";
 import GearList from "./components/GearList.jsx";
+import ExpiryDates, { ExpiryBanner } from "./components/ExpiryDates.jsx";
+import { loadExpiry, saveExpiry } from "./utils/expiry.js";
 import ActionButtons from "./components/ActionButtons.jsx";
 import BackupReminder from "./components/BackupReminder.jsx";
 import DraftNotice from "./components/DraftNotice.jsx";
@@ -50,6 +53,14 @@ export default function HiveLogbook() {
     restoreFromFile,
   } = useHiveLog();
 
+  // Expiry dates (EpiPen and other items), kept on the phone. Shared by the
+  // warning at the top, the expiry list and the gear list.
+  const [expiry, setExpiry] = useState(loadExpiry);
+  const changeExpiry = (next) => {
+    setExpiry(next);
+    saveExpiry(next);
+  };
+
   // field name -> message, so each field can show its own problem.
   const problemByField = Object.fromEntries(
     (inputProblems ?? []).map((p) => [p.field, p.message]),
@@ -59,9 +70,13 @@ export default function HiveLogbook() {
     <div className="hive-app">
       <Header justSaved={justSaved} />
 
+      <ExpiryBanner expiry={expiry} />
+
       <HiveStatusList log={log} />
 
-      <GearList />
+      <ExpiryDates expiry={expiry} onChange={changeExpiry} />
+
+      <GearList epipen={expiry.epipen.has} />
 
       <DraftNotice visible={draftRestored} onDiscard={discardDraft} />
 
