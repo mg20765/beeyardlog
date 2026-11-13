@@ -1,9 +1,6 @@
-import { useState } from "react";
 import {
   hiveStatuses,
   overdueCount,
-  loadLimitDays,
-  saveLimitDays,
   LIMIT_CHOICES_DAYS,
 } from "../utils/hiveStatus.js";
 import { todayLocal } from "../utils/date.js";
@@ -18,20 +15,24 @@ function daysAgo(days) {
 
 // Every hive with when it was last checked, longest unchecked first, and a
 // warning for any past the limit. The app can't ring while it is closed, so
-// the warning shows whenever it is opened.
-export default function HiveStatusList({ log }) {
-  const [limit, setLimit] = useState(loadLimitDays);
+// the warning shows whenever it is opened. The limit is chosen here but kept
+// by the page, so the Hives button can show how many are overdue.
+export default function HiveStatusList({ log, limit, onLimitChange }) {
   const statuses = hiveStatuses(log, todayLocal(), limit);
-  if (statuses.length === 0) return null;
+
+  if (statuses.length === 0) {
+    return (
+      <div className="hive-status">
+        <p className="hive-section__title">Hives to check</p>
+        <p className="hive-empty-state">
+          No hives yet. Log an inspection and your hives will be listed here.
+        </p>
+      </div>
+    );
+  }
 
   const overdue = overdueCount(statuses);
   const limitText = `${weeks(limit)}+ weeks`;
-
-  const changeLimit = (e) => {
-    const days = Number(e.target.value);
-    setLimit(days);
-    saveLimitDays(days);
-  };
 
   return (
     <div className="hive-status">
@@ -54,7 +55,7 @@ export default function HiveStatusList({ log }) {
           id="status-limit"
           className="hive-input"
           value={limit}
-          onChange={changeLimit}
+          onChange={(e) => onLimitChange(Number(e.target.value))}
         >
           {LIMIT_CHOICES_DAYS.map((d) => (
             <option key={d} value={d}>

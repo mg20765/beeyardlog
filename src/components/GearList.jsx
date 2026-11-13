@@ -21,7 +21,6 @@ export default function GearList({ epipen = false }) {
   const [gear, setGear] = useState(loadGear);
   const [mode, setMode] = useState("yard");
   const [draft, setDraft] = useState("");
-  const [open, setOpen] = useState(false);
 
   const change = (next) => {
     setGear(next);
@@ -39,91 +38,80 @@ export default function GearList({ epipen = false }) {
 
   return (
     <div className="hive-gear">
-      <button
-        type="button"
-        className="hive-btn-outline hive-gear-toggle"
-        aria-expanded={open}
-        aria-controls="gear-panel"
-        onClick={() => setOpen(!open)}
-      >
-        <span>Gear checklist</span>
-        <span aria-hidden="true">{open ? "▲" : "▼"}</span>
-      </button>
+      <p className="hive-section__title">Gear checklist</p>
 
-      <div id="gear-panel" hidden={!open}>
-        <div className="hive-row2">
-          {MODES.map(([key, label]) => (
-            <button
-              key={key}
-              type="button"
-              className={key === mode ? "hive-btn-add" : "hive-btn-outline"}
-              aria-pressed={key === mode}
-              onClick={() => setMode(key)}
-            >
-              {label}
-            </button>
+      <div className="hive-row2">
+        {MODES.map(([key, label]) => (
+          <button
+            key={key}
+            type="button"
+            className={key === mode ? "hive-btn-add" : "hive-btn-outline"}
+            aria-pressed={key === mode}
+            onClick={() => setMode(key)}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      <p className="hive-btn-hint">
+        {done} of {total} packed
+      </p>
+
+      {groupsFor(mode, gear, options).map((group) => (
+        <div key={group.title} className="hive-gear-group">
+          <p className="hive-label">{group.title}</p>
+          {group.items.map((i) => (
+            <div key={i.id} className="hive-gear-line">
+              <label className="hive-chk-item">
+                <input
+                  type="checkbox"
+                  checked={gear.ticked.includes(i.id)}
+                  onChange={() => change(toggleTick(gear, i.id))}
+                />
+                {i.label}
+              </label>
+              {group.own && (
+                <button
+                  type="button"
+                  className="hive-del-btn"
+                  aria-label={`Remove ${i.label}`}
+                  onClick={() => change(removeCustom(gear, mode, i.id))}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
           ))}
         </div>
+      ))}
 
-        <p className="hive-btn-hint">
-          {done} of {total} packed
-        </p>
+      <form className="hive-gear-add" onSubmit={submit}>
+        <label className="hive-label" htmlFor="gear-own">
+          Add your own item
+        </label>
+        <div className="hive-row2">
+          <input
+            id="gear-own"
+            className="hive-input"
+            value={draft}
+            maxLength={40}
+            onChange={(e) => setDraft(e.target.value)}
+            placeholder="e.g. Zip ties"
+          />
+          <button type="submit" className="hive-btn-outline">
+            Add item
+          </button>
+        </div>
+      </form>
 
-        {groupsFor(mode, gear, options).map((group) => (
-          <div key={group.title} className="hive-gear-group">
-            <p className="hive-label">{group.title}</p>
-            {group.items.map((i) => (
-              <div key={i.id} className="hive-gear-line">
-                <label className="hive-chk-item">
-                  <input
-                    type="checkbox"
-                    checked={gear.ticked.includes(i.id)}
-                    onChange={() => change(toggleTick(gear, i.id))}
-                  />
-                  {i.label}
-                </label>
-                {group.own && (
-                  <button
-                    type="button"
-                    className="hive-del-btn"
-                    aria-label={`Remove ${i.label}`}
-                    onClick={() => change(removeCustom(gear, mode, i.id))}
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-        ))}
-
-        <form className="hive-gear-add" onSubmit={submit}>
-          <label className="hive-label" htmlFor="gear-own">
-            Add your own item
-          </label>
-          <div className="hive-row2">
-            <input
-              id="gear-own"
-              className="hive-input"
-              value={draft}
-              maxLength={40}
-              onChange={(e) => setDraft(e.target.value)}
-              placeholder="e.g. Zip ties"
-            />
-            <button type="submit" className="hive-btn-outline">
-              Add item
-            </button>
-          </div>
-        </form>
-
-        <button
-          type="button"
-          className="hive-btn-outline"
-          onClick={() => change(startNewTrip(gear))}
-        >
-          Start a new trip
-        </button>
-      </div>
+      <button
+        type="button"
+        className="hive-btn-outline"
+        onClick={() => change(startNewTrip(gear))}
+      >
+        Start a new trip
+      </button>
     </div>
   );
 }

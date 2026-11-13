@@ -822,3 +822,25 @@
 .hive-expiry-row .hive-input {
   flex: 0 1 170px;
 }
+
+/* The three view buttons under the header. */
+.hive-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.hive-tabs button {
+  flex: 1;
+}
+
+.hive-tab-badge {
+  display: inline-block;
+  background: #9a2a1f;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 99px;
+  margin-left: 6px;
+}
