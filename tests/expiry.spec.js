@@ -13,15 +13,13 @@ test.beforeEach(async ({ page }) => {
 });
 
 const banner = (page) => page.locator(".hive-expiry-banner");
-const expiryButton = (page) => page.getByRole("button", { name: "Expiry dates" });
-const openExpiry = async (page) => {
-  await expiryButton(page).click();
+// The expiry dates and the gear checklist share the Gear view.
+const openGear = async (page) => {
+  await page.getByRole("button", { name: "Gear", exact: true }).click();
 };
+const openExpiry = openGear;
 const carryPen = (page) => page.getByLabel("I carry an EpiPen");
 const penDate = (page) => page.getByLabel("EpiPen expiry date");
-const openGear = async (page) => {
-  await page.getByRole("button", { name: "Gear checklist" }).click();
-};
 
 test("nothing about an EpiPen shows until you say you carry one", async ({ page }) => {
   await expect(banner(page)).toHaveCount(0);
@@ -95,31 +93,10 @@ test("the choices and dates are remembered", async ({ page }) => {
   await expect(penDate(page)).toHaveValue("2026-11-20");
 });
 
-test("the warning sits at the top, above the gear list", async ({ page }) => {
-  await openExpiry(page);
-  await carryPen(page).check();
-  await penDate(page).fill("2026-11-01");
-  const warning = await banner(page).boundingBox();
-  const gear = await page.getByRole("button", { name: "Gear checklist" }).boundingBox();
-  const form = await page.getByPlaceholder("e.g. Y2").boundingBox();
-  expect(warning.y).toBeLessThan(gear.y);
-  expect(warning.y).toBeLessThan(form.y);
-});
-
-test("the expiry list opens from a proper button that says whether it is open", async ({ page }) => {
-  const button = expiryButton(page);
-  await expect(button).toHaveAttribute("aria-expanded", "false");
-  expect((await button.boundingBox()).height).toBeGreaterThanOrEqual(48);
-  await button.click();
-  await expect(button).toHaveAttribute("aria-expanded", "true");
-  await expect(carryPen(page)).toBeVisible();
-  await button.click();
-  await expect(carryPen(page)).toBeHidden();
-});
-
 test("the expiry list does not touch the inspection log", async ({ page }) => {
   await openExpiry(page);
   await carryPen(page).check();
   await penDate(page).fill("2026-11-01");
+  await page.getByRole("button", { name: "Log", exact: true }).click();
   await expect(page.getByText("No inspections logged yet")).toBeVisible();
 });

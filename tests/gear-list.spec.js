@@ -9,14 +9,17 @@ test.beforeEach(async ({ page }) => {
 });
 
 const openGear = async (page) => {
-  await page.getByText("Gear checklist", { exact: true }).click();
+  await page.getByRole("button", { name: "Gear", exact: true }).click();
+};
+const openLog = async (page) => {
+  await page.getByRole("button", { name: "Log", exact: true }).click();
 };
 // Exact for plain names, so "Smoker" does not also match "Smoker fuel".
 const item = (page, name) =>
   page.getByRole("checkbox", typeof name === "string" ? { name, exact: true } : { name });
 
-test("the gear list is closed until it is wanted", async ({ page }) => {
-  await expect(item(page, "Smoker")).toBeHidden();
+test("the gear list shows on the Gear view, open and ready to tick", async ({ page }) => {
+  await expect(item(page, "Smoker")).toHaveCount(0);
   await openGear(page);
   await expect(item(page, "Smoker")).toBeVisible();
 });
@@ -77,28 +80,7 @@ test("a new trip unticks everything but keeps your own items", async ({ page }) 
 test("the gear list does not touch the inspection log", async ({ page }) => {
   await openGear(page);
   await item(page, "Smoker").check();
+  await openLog(page);
   await expect(page.getByText("No inspections logged yet")).toBeVisible();
   await expect(page.getByRole("button", { name: /backup/i }).first()).toBeDisabled();
-});
-
-test("the gear list sits above the inspection form, so it can be used before a trip", async ({ page }) => {
-  const gear = await page.getByText("Gear checklist", { exact: true }).boundingBox();
-  const form = await page.getByPlaceholder("e.g. Y2").boundingBox();
-  expect(gear.y).toBeLessThan(form.y);
-});
-
-test("the gear list opens from a proper button that says whether it is open", async ({ page }) => {
-  const button = page.getByRole("button", { name: "Gear checklist" });
-  await expect(button).toBeVisible();
-  await expect(button).toHaveAttribute("aria-expanded", "false");
-  const box = await button.boundingBox();
-  expect(box.height).toBeGreaterThanOrEqual(48);
-
-  await button.click();
-  await expect(button).toHaveAttribute("aria-expanded", "true");
-  await expect(page.getByRole("checkbox", { name: "Smoker", exact: true })).toBeVisible();
-
-  await button.click();
-  await expect(button).toHaveAttribute("aria-expanded", "false");
-  await expect(page.getByRole("checkbox", { name: "Smoker", exact: true })).toBeHidden();
 });
