@@ -22,6 +22,9 @@ import {
   overdueCount,
   loadLimitDays,
   saveLimitDays,
+  loadUntracked,
+  saveUntracked,
+  toggleUntracked,
 } from "./utils/hiveStatus.js";
 import { todayLocal } from "./utils/date.js";
 import ActionButtons from "./components/ActionButtons.jsx";
@@ -76,7 +79,18 @@ export default function HiveLogbook() {
     setLimit(days);
     saveLimitDays(days);
   };
-  const overdue = overdueCount(hiveStatuses(log, todayLocal(), limit));
+
+  // Hives set aside as call-outs: they stay in the list but are never overdue.
+  const [untracked, setUntracked] = useState(loadUntracked);
+  const changeUntracked = (key) => {
+    const next = toggleUntracked(untracked, key);
+    setUntracked(next);
+    saveUntracked(next);
+  };
+
+  const overdue = overdueCount(
+    hiveStatuses(log, todayLocal(), limit, untracked),
+  );
 
   // Which view the page shows. It opens on the form.
   const [view, setView] = useState("log");
@@ -95,7 +109,15 @@ export default function HiveLogbook() {
       <ViewTabs view={view} onChange={setView} overdue={overdue} />
 
       {view === "hives" && (
-        <HiveStatusList log={log} limit={limit} onLimitChange={changeLimit} />
+        <HiveStatusList
+          log={log}
+          limit={limit}
+          onLimitChange={changeLimit}
+          untracked={untracked}
+          onToggleUntracked={changeUntracked}
+          deleteEntry={deleteEntry}
+          updateEntry={updateEntry}
+        />
       )}
 
       {view === "gear" && (

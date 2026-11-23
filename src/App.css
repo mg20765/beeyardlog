@@ -709,11 +709,23 @@
 }
 
 .hive-status-row {
+  border-bottom: 1px solid var(--badge-bg);
+}
+
+.hive-status-open {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: 2px;
+  width: 100%;
+  min-height: 56px;
   padding: 10px 0;
-  border-bottom: 1px solid var(--badge-bg);
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
 }
 
 .hive-status-name {
@@ -843,4 +855,9 @@
   padding: 2px 8px;
   border-radius: 99px;
   margin-left: 6px;
+}
+
+/* One hive's own view, with its entries. */
+.hive-detail-track {
+  margin-top: 12px;
 }

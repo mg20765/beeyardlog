@@ -55,6 +55,14 @@ export function applyEdits(row, edits) {
   return next;
 }
 
+// For an entry saved with the Yard # and Hive ID the wrong way round: puts each
+// value in the other box. Everything else is left as it is.
+export const swapYardAndHive = (edits) => ({
+  ...edits,
+  yardNo: edits.hiveId,
+  hiveId: edits.yardNo,
+});
+
 // Same rules as when adding an entry, plus the Hive ID. [{ field, message }]
 export function getEditProblems(edits, row) {
   const problems = [];
