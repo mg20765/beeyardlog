@@ -97,13 +97,13 @@ test("a call-out can be set aside so it never counts as overdue", async ({ page 
   await expect(hivesTab(page).locator(".hive-tab-badge")).toHaveText("2");
 
   await openHive(page, "Topito rd");
-  await page.getByRole("button", { name: "Call-out, don't track" }).click();
+  await page.getByRole("button", { name: "Don't track (call-out or on hold)" }).click();
   await expect(page.getByRole("button", { name: "Track this hive again" })).toBeVisible();
   await back(page).click();
 
   await expect(hivesTab(page).locator(".hive-tab-badge")).toHaveText("1");
   await expect(page.getByRole("status").first()).toContainText("1 hive not checked in 4+ weeks");
-  await expect(page.getByText("Not tracked (call-outs)")).toBeVisible();
+  await expect(page.getByText("Not tracked (call-outs and on hold)")).toBeVisible();
   await expect(row(page, "Topito rd")).not.toContainText("Due for a check");
   await expect(row(page, "Dino")).toContainText("Due for a check");
 });
@@ -111,7 +111,7 @@ test("a call-out can be set aside so it never counts as overdue", async ({ page 
 test("a call-out is remembered, and can be tracked again", async ({ page }) => {
   await saveEntry(page, { yard: "1", hive: "Topito rd", date: "2026-09-01" });
   await openHive(page, "Topito rd");
-  await page.getByRole("button", { name: "Call-out, don't track" }).click();
+  await page.getByRole("button", { name: "Don't track (call-out or on hold)" }).click();
 
   await page.reload();
   await expect(hivesTab(page).locator(".hive-tab-badge")).toHaveCount(0);
@@ -119,7 +119,7 @@ test("a call-out is remembered, and can be tracked again", async ({ page }) => {
   await page.getByRole("button", { name: "Track this hive again" }).click();
   await back(page).click();
   await expect(hivesTab(page).locator(".hive-tab-badge")).toHaveText("1");
-  await expect(page.getByText("Not tracked (call-outs)")).toHaveCount(0);
+  await expect(page.getByText("Not tracked (call-outs and on hold)")).toHaveCount(0);
 });
 
 test("the Back button is big enough to tap", async ({ page }) => {

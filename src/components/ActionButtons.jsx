@@ -2,12 +2,8 @@ import { useRef, useState } from "react";
 
 export default function ActionButtons({
   onAdd,
-  onExport,
   onClear,
-  onBackup,
   onRestoreFile,
-  exportDisabled,
-  backupDisabled,
   importMessage,
   count,
 }) {
@@ -27,41 +23,19 @@ export default function ActionButtons({
       </button>
       <button
         type="button"
-        className="hive-btn-export"
-        onClick={onExport}
-        disabled={exportDisabled}
+        className="hive-btn-outline"
+        onClick={() => fileInputRef.current?.click()}
       >
-        Export all to Excel
+        Restore backup
       </button>
       <p className="hive-btn-hint">
-        Opens as a real spreadsheet in Excel or Google Sheets.
-      </p>
-
-      <div className="hive-row2" style={{ marginBottom: 4 }}>
-        <button
-          type="button"
-          className="hive-btn-outline"
-          onClick={onBackup}
-          disabled={backupDisabled}
-        >
-          Backup (JSON)
-        </button>
-        <button
-          type="button"
-          className="hive-btn-outline"
-          onClick={() => fileInputRef.current?.click()}
-        >
-          Restore backup
-        </button>
-      </div>
-      <p className="hive-btn-hint">
-        For saving/restoring your log on this or a new phone — not for
-        viewing. Use "Export all to Excel" above to see your data.
+        Loads a backup file into this app. Restoring adds to what is already
+        here, so do it once. The Save your records box above makes the backup
+        and the Excel file.
       </p>
       <input
         ref={fileInputRef}
         type="file"
-        accept="application/json,.json"
         onChange={handleFileChange}
         style={{ display: "none" }}
       />
@@ -71,8 +45,8 @@ export default function ActionButtons({
         <div className="hive-missing-warning">
           <p>
             Delete all {count} inspection{count === 1 ? "" : "s"} from this
-            device? <strong>This can't be undone.</strong> Back up first if
-            you might need them.
+            device? <strong>This can't be undone.</strong> Back up first if you
+            might need them.
           </p>
           <div className="hive-row2">
             <button
