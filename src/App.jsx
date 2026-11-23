@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 import Header from "./NavBar/Header.jsx";
 import HiveDetailsSection from "./components/HiveDetailsSection.jsx";
@@ -16,7 +16,9 @@ import HiveStatusList from "./components/HiveStatusList.jsx";
 import GearList from "./components/GearList.jsx";
 import ExpiryDates, { ExpiryBanner } from "./components/ExpiryDates.jsx";
 import ViewTabs from "./components/ViewTabs.jsx";
+import BackupCard from "./components/BackupCard.jsx";
 import { loadExpiry, saveExpiry } from "./utils/expiry.js";
+import { backupStatus, storageProtection } from "./utils/backupStatus.js";
 import {
   hiveStatuses,
   overdueCount,
@@ -60,6 +62,9 @@ export default function HiveLogbook() {
     updateEntry,
     clearLog,
     exportAll,
+    lastBackupDate,
+    backedUpBefore,
+    changesSinceBackup,
     backupToFile,
     restoreFromFile,
   } = useHiveLog();
@@ -91,6 +96,20 @@ export default function HiveLogbook() {
   const overdue = overdueCount(
     hiveStatuses(log, todayLocal(), limit, untracked),
   );
+
+  // Whether the phone has agreed to keep this app's data, and how safe the
+  // records are: the last backup and anything changed since.
+  const [protection, setProtection] = useState("unknown");
+  useEffect(() => {
+    storageProtection().then(setProtection);
+  }, []);
+  const saveStatus = backupStatus({
+    lastBackupDate,
+    today: todayLocal(),
+    changesSince: changesSinceBackup,
+    hasEntries: log.length > 0,
+    backedUpBefore,
+  });
 
   // Which view the page shows. It opens on the form.
   const [view, setView] = useState("log");
@@ -129,6 +148,13 @@ export default function HiveLogbook() {
 
       {view === "log" && (
         <>
+          <BackupCard
+            status={saveStatus}
+            protection={protection}
+            onBackup={backupToFile}
+            onExport={exportAll}
+          />
+
           <DraftNotice visible={draftRestored} onDiscard={discardDraft} />
 
           <ProblemsContext.Provider value={problemByField}>
@@ -165,12 +191,8 @@ export default function HiveLogbook() {
 
           <ActionButtons
             onAdd={addToLog}
-            onExport={exportAll}
             onClear={clearLog}
-            onBackup={backupToFile}
             onRestoreFile={restoreFromFile}
-            exportDisabled={log.length === 0}
-            backupDisabled={log.length === 0}
             count={log.length}
             importMessage={importMessage}
           />

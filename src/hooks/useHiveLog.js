@@ -21,6 +21,7 @@ import { applyEdits } from "../utils/editEntry.js";
 import { downloadBackup, readBackupFile } from "../utils/backup.js";
 import { loadDraft, saveDraft, clearDraft, isPristine } from "../utils/draft.js";
 import { requestPersistentStorage } from "../utils/persist.js";
+import { loadLastBackupDate, saveLastBackupDate } from "../utils/backupStatus.js";
 import { createSync } from "../utils/sync.js";
 import {
   maxId,
@@ -78,6 +79,7 @@ export default function useHiveLog() {
   const [lastBackupId, setLastBackupId] = useState(
     () => readSavedNumber(LAST_BACKUP_ID_KEY) ?? 0,
   );
+  const [lastBackupDate, setLastBackupDate] = useState(loadLastBackupDate);
   const [editsSinceBackup, setEditsSinceBackup] = useState(
     () => readSavedNumber(EDITS_SINCE_BACKUP_KEY) ?? 0,
   );
@@ -376,6 +378,9 @@ export default function useHiveLog() {
     if (log.length === 0) return;
     downloadBackup(log.map(omitId));
     resetBackupTrackers(maxId(log));
+    const date = todayLocal();
+    setLastBackupDate(date);
+    saveLastBackupDate(date);
   };
 
   const restoreFromFile = async (file) => {
@@ -424,6 +429,9 @@ export default function useHiveLog() {
     updateEntry,
     clearLog,
     exportAll,
+    lastBackupDate,
+    backedUpBefore: lastBackupId > 0,
+    changesSinceBackup: changesTotal,
     backupToFile,
     restoreFromFile,
   };

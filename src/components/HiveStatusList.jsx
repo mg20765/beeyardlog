@@ -79,12 +79,13 @@ function HiveDetail({
             className="hive-btn-outline hive-detail-track"
             onClick={() => onToggleTracked(open.key)}
           >
-            {tracked ? "Call-out, don't track" : "Track this hive again"}
+            {tracked ? "Don't track (call-out or on hold)" : "Track this hive again"}
           </button>
           {tracked ? (
             <p className="hive-btn-hint">
-              A call-out is a one-off visit. It stays in the list but never
-              counts as overdue.
+              A call-out is a one-off visit, and a hive on hold is one you are
+              not sure about yet. It stays in the list but never counts as
+              overdue.
             </p>
           ) : (
             <p className="hive-btn-hint">
@@ -187,7 +188,7 @@ export default function HiveStatusList({
       {setAside.length > 0 && (
         <>
           <p className="hive-label" style={{ marginTop: 12 }}>
-            Not tracked (call-outs)
+            Not tracked (call-outs and on hold)
           </p>
           <ul className="hive-status-list">
             {setAside.map((h) => (
