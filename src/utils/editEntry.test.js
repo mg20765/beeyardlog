@@ -1,5 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { editableFields, rowToEdits, applyEdits, getEditProblems } from "./editEntry.js";
+import {
+  editableFields,
+  rowToEdits,
+  applyEdits,
+  getEditProblems,
+  swapYardAndHive,
+} from "./editEntry.js";
 
 const row = (over = {}) => ({
   id: 7,
@@ -202,5 +208,44 @@ describe("editableFields: which pad a number box should open", () => {
   it("asks for the whole-number pad for the mite counts", () => {
     const r = row({ "Mite Method": "Alcohol wash", "Bees Sampled": "300", "Mites Counted": "9" });
     expect(byName(r)).toMatchObject({ miteBees: "numeric", miteCount: "numeric" });
+  });
+});
+
+describe("swapYardAndHive", () => {
+  it("puts the Yard # in the Hive ID box and the Hive ID in the Yard # box", () => {
+    const edits = { ...rowToEdits(row({ "Yard #": "1", "Hive ID": "Wnd" })) };
+    const swapped = swapYardAndHive(edits);
+    expect(swapped.yardNo).toBe("Wnd");
+    expect(swapped.hiveId).toBe("1");
+  });
+
+  it("leaves every other box as it was", () => {
+    const edits = { ...rowToEdits(row({ Notes: "strong hive" })), yardNo: "1", hiveId: "Wnd" };
+    const swapped = swapYardAndHive(edits);
+    expect(swapped.notes).toBe("strong hive");
+    expect(swapped.date).toBe(edits.date);
+  });
+
+  it("does not change the edits it was given", () => {
+    const edits = { yardNo: "1", hiveId: "Wnd" };
+    swapYardAndHive(edits);
+    expect(edits).toEqual({ yardNo: "1", hiveId: "Wnd" });
+  });
+
+  it("swapping twice puts them back", () => {
+    const edits = { yardNo: "1", hiveId: "Wnd" };
+    expect(swapYardAndHive(swapYardAndHive(edits))).toEqual(edits);
+  });
+
+  it("can be saved: the swapped entry keeps both values", () => {
+    const original = row({ "Yard #": "1", "Hive ID": "Wnd" });
+    const saved = applyEdits(original, swapYardAndHive(rowToEdits(original)));
+    expect(saved["Yard #"]).toBe("Wnd");
+    expect(saved["Hive ID"]).toBe("1");
+  });
+
+  it("an empty Yard # swapped in would leave no Hive ID, which is caught", () => {
+    const edits = swapYardAndHive({ ...rowToEdits(row({ "Yard #": "", "Hive ID": "Wnd" })) });
+    expect(getEditProblems(edits, row()).map((p) => p.field)).toContain("hiveId");
   });
 });

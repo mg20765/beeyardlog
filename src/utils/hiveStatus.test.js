@@ -6,6 +6,10 @@ import {
   loadLimitDays,
   saveLimitDays,
   LIMIT_CHOICES_DAYS,
+  hiveKey,
+  toggleUntracked,
+  loadUntracked,
+  saveUntracked,
 } from "./hiveStatus.js";
 
 const row = (yard, hive, date, id = 1) => ({
@@ -164,5 +168,90 @@ describe("the saved limit", () => {
     };
     expect(loadLimitDays(blocked)).toBe(28);
     expect(() => saveLimitDays(14, blocked)).not.toThrow();
+  });
+});
+
+describe("hiveKey", () => {
+  it("ignores capitals and stray spaces, and keeps yard and hive apart", () => {
+    expect(hiveKey(" Amb ", "DINO")).toBe(hiveKey("amb", "dino"));
+    expect(hiveKey("1", "Wnd")).not.toBe(hiveKey("Wnd", "1"));
+  });
+});
+
+describe("hives you have chosen not to track (call-outs)", () => {
+  const today = "2026-11-09";
+  const log = [
+    row("1", "Topito rd", "2026-09-01", 1), // a call-out, long ago
+    row("Amb", "Dino", "2026-09-01", 2),
+    row("Amb", "Tovy", "2026-11-08", 3),
+  ];
+  const untracked = [hiveKey("1", "Topito rd")];
+
+  it("marks an untracked hive and never calls it overdue", () => {
+    const list = hiveStatuses(log, today, 28, untracked);
+    const topito = list.find((h) => h.hiveId === "Topito rd");
+    expect(topito.tracked).toBe(false);
+    expect(topito.overdue).toBe(false);
+    expect(list.find((h) => h.hiveId === "Dino").tracked).toBe(true);
+  });
+
+  it("leaves it out of the overdue count", () => {
+    expect(overdueCount(hiveStatuses(log, today, 28, []))).toBe(2);
+    expect(overdueCount(hiveStatuses(log, today, 28, untracked))).toBe(1);
+  });
+
+  it("lists tracked hives first and untracked ones last", () => {
+    const names = hiveStatuses(log, today, 28, untracked).map((h) => h.hiveId);
+    expect(names).toEqual(["Dino", "Tovy", "Topito rd"]);
+  });
+
+  it("gives every hive its key", () => {
+    expect(hiveStatuses(log, today)[0].key).toMatch(/\|/);
+  });
+
+  it("works the same with no list given", () => {
+    expect(hiveStatuses(log, today).every((h) => h.tracked)).toBe(true);
+  });
+});
+
+describe("toggleUntracked", () => {
+  it("adds a hive, then takes it off again", () => {
+    const key = hiveKey("1", "Topito rd");
+    const added = toggleUntracked([], key);
+    expect(added).toEqual([key]);
+    expect(toggleUntracked(added, key)).toEqual([]);
+  });
+
+  it("does not change the list it was given", () => {
+    const list = [];
+    toggleUntracked(list, "x|y");
+    expect(list).toEqual([]);
+  });
+});
+
+describe("saving the untracked list", () => {
+  it("remembers it", () => {
+    const store = fakeStorage();
+    saveUntracked(["1|topito rd"], store);
+    expect(loadUntracked(store)).toEqual(["1|topito rd"]);
+  });
+
+  it("starts empty, and ignores damaged text or things that are not names", () => {
+    expect(loadUntracked(fakeStorage())).toEqual([]);
+    expect(loadUntracked(fakeStorage({ "hive-untracked": "{nope" }))).toEqual([]);
+    expect(loadUntracked(fakeStorage({ "hive-untracked": '[1,"a|b",null]' }))).toEqual(["a|b"]);
+  });
+
+  it("falls back to empty when storage is blocked", () => {
+    const blocked = {
+      getItem() {
+        throw new Error("blocked");
+      },
+      setItem() {
+        throw new Error("blocked");
+      },
+    };
+    expect(loadUntracked(blocked)).toEqual([]);
+    expect(() => saveUntracked(["a|b"], blocked)).not.toThrow();
   });
 });

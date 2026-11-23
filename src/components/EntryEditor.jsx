@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { editableFields, rowToEdits, getEditProblems } from "../utils/editEntry.js";
+import {
+  editableFields,
+  rowToEdits,
+  getEditProblems,
+  swapYardAndHive,
+} from "../utils/editEntry.js";
 
 // Lets a saved entry's typed fields be corrected, for example a spelling
 // mistake in a Hive ID. Ticks and choices can't be changed here.
@@ -10,6 +15,13 @@ export default function EntryEditor({ row, onSave, onCancel }) {
 
   const change = (name) => (e) => {
     setEdits((prev) => ({ ...prev, [name]: e.target.value }));
+    setProblems([]);
+  };
+
+  // For an entry saved with the two the wrong way round. Nothing is saved until
+  // "Save changes", and swapping again puts them back.
+  const swap = () => {
+    setEdits((prev) => swapYardAndHive(prev));
     setProblems([]);
   };
 
@@ -31,6 +43,9 @@ export default function EntryEditor({ row, onSave, onCancel }) {
         Fix the details of this entry. To change a tick or a choice, delete the
         entry and add it again.
       </p>
+      <button type="button" className="hive-btn-outline" onClick={swap}>
+        Swap Yard # and Hive ID
+      </button>
       {fields.map((f) => (
         <div className="hive-field" key={f.name}>
           <label className="hive-label" htmlFor={`edit-${f.name}`}>
