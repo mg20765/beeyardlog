@@ -13,6 +13,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 const openHives = (page) => page.getByRole("button", { name: /^Hives/ }).click();
+const row = (page, text) => page.locator(".hive-status-row", { hasText: text });
 
 async function saveEntry(page, { yard, hive, date }) {
   await page.getByPlaceholder("e.g. Y2").fill(yard);
@@ -83,4 +84,55 @@ test("the limit can be changed, and is remembered", async ({ page }) => {
   await openHives(page);
   await expect(page.getByLabel("Warn me after")).toHaveValue("14");
   await expect(page.getByRole("status")).toContainText("1 hive not checked in 2+ weeks");
+});
+
+const onlyDue = (page) => page.getByLabel("Show only hives that are due");
+
+test("can show only the hives that are due", async ({ page }) => {
+  await saveEntry(page, { yard: "Y1", hive: "Overdue", date: "2026-10-01" });
+  await saveEntry(page, { yard: "Y1", hive: "Fine", date: "2026-11-05" });
+  await openHives(page);
+  await expect(page.locator(".hive-status-row")).toHaveCount(2);
+  await expect(onlyDue(page)).not.toBeChecked();
+
+  await onlyDue(page).check();
+  await expect(page.locator(".hive-status-row")).toHaveCount(1);
+  await expect(page.locator(".hive-status-row")).toContainText("Overdue");
+  await expect(page.getByRole("status")).toContainText("1 hive not checked in 4+ weeks");
+
+  await onlyDue(page).uncheck();
+  await expect(page.locator(".hive-status-row")).toHaveCount(2);
+});
+
+test("says so when nothing is due and only the due hives are shown", async ({ page }) => {
+  await saveEntry(page, { yard: "Y1", hive: "Fine", date: "2026-11-05" });
+  await openHives(page);
+  await onlyDue(page).check();
+  await expect(page.getByText("Nothing is due")).toBeVisible();
+  await expect(page.locator(".hive-status-row")).toHaveCount(0);
+});
+
+test("the only-due choice is remembered", async ({ page }) => {
+  await saveEntry(page, { yard: "Y1", hive: "Overdue", date: "2026-10-01" });
+  await saveEntry(page, { yard: "Y1", hive: "Fine", date: "2026-11-05" });
+  await openHives(page);
+  await onlyDue(page).check();
+
+  await page.reload();
+  await openHives(page);
+  await expect(onlyDue(page)).toBeChecked();
+  await expect(page.locator(".hive-status-row")).toHaveCount(1);
+});
+
+test("hives set aside as call-outs stay out of the due-only list", async ({ page }) => {
+  await saveEntry(page, { yard: "1", hive: "Topito rd", date: "2026-09-01" });
+  await saveEntry(page, { yard: "Amb", hive: "Dino", date: "2026-09-01" });
+  await openHives(page);
+  await row(page, "Topito rd").getByRole("button").click();
+  await page.getByRole("button", { name: "Don't track (call-out or on hold)" }).click();
+  await page.getByRole("button", { name: "Back to hives" }).click();
+
+  await onlyDue(page).check();
+  await expect(page.locator(".hive-status-row")).toHaveCount(1);
+  await expect(page.locator(".hive-status-row")).toContainText("Dino");
 });

@@ -115,3 +115,27 @@ export function saveUntracked(list, storage = browserStorage()) {
     // Not saved; the choice still applies until the app is closed.
   }
 }
+
+// Only the hives that are due. Hives set aside as call-outs or on hold are never
+// overdue, so they are left out too.
+export const dueOnly = (statuses) => statuses.filter((h) => h.overdue);
+
+// Whether the Hives view shows only the hives that are due, remembered on the
+// phone.
+const ONLY_DUE_KEY = "hive-only-due";
+
+export function loadOnlyDue(storage = browserStorage()) {
+  try {
+    return storage?.getItem(ONLY_DUE_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+export function saveOnlyDue(on, storage = browserStorage()) {
+  try {
+    storage?.setItem(ONLY_DUE_KEY, on ? "1" : "0");
+  } catch {
+    // Not saved; the choice still applies until the app is closed.
+  }
+}

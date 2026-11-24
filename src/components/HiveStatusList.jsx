@@ -3,6 +3,7 @@ import LogEntries from "./LogEntries.jsx";
 import {
   hiveStatuses,
   hiveKey,
+  dueOnly,
   overdueCount,
   LIMIT_CHOICES_DAYS,
 } from "../utils/hiveStatus.js";
@@ -79,7 +80,9 @@ function HiveDetail({
             className="hive-btn-outline hive-detail-track"
             onClick={() => onToggleTracked(open.key)}
           >
-            {tracked ? "Don't track (call-out or on hold)" : "Track this hive again"}
+            {tracked
+              ? "Don't track (call-out or on hold)"
+              : "Track this hive again"}
           </button>
           {tracked ? (
             <p className="hive-btn-hint">
@@ -108,6 +111,8 @@ export default function HiveStatusList({
   onLimitChange,
   untracked,
   onToggleUntracked,
+  onlyDue,
+  onOnlyDueChange,
   deleteEntry,
   updateEntry,
 }) {
@@ -177,15 +182,30 @@ export default function HiveStatusList({
           ))}
         </select>
       </div>
+      <label className="hive-chk-item">
+        <input
+          type="checkbox"
+          checked={onlyDue}
+          onChange={(e) => onOnlyDueChange(e.target.checked)}
+        />
+        Show only hives that are due
+      </label>
       <p className="hive-btn-hint">
         Tap a hive to see its entries and edit them.
       </p>
-      <ul className="hive-status-list">
-        {tracked.map((h) => (
-          <HiveRow key={h.key} hive={h} onOpen={openHive} />
-        ))}
-      </ul>
-      {setAside.length > 0 && (
+      {onlyDue && overdue === 0 ? (
+        <p className="hive-empty-state">
+          Nothing is due. Every tracked hive was checked in the last{" "}
+          {weeks(limit)} weeks.
+        </p>
+      ) : (
+        <ul className="hive-status-list">
+          {(onlyDue ? dueOnly(tracked) : tracked).map((h) => (
+            <HiveRow key={h.key} hive={h} onOpen={openHive} />
+          ))}
+        </ul>
+      )}
+      {!onlyDue && setAside.length > 0 && (
         <>
           <p className="hive-label" style={{ marginTop: 12 }}>
             Not tracked (call-outs and on hold)
