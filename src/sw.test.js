@@ -66,3 +66,30 @@ describe("service worker page navigation", () => {
     expect(sw.put).not.toHaveBeenCalled();
   });
 });
+
+describe("service worker version checks", () => {
+  it("sends a version check straight to the network, never to the saved copy", () => {
+    const sw = loadServiceWorker({ fetchImpl: async () => new Response("x") });
+    const respondWith = vi.fn();
+    sw.handlers.fetch({
+      request: {
+        method: "GET",
+        url: "https://app.test/index.html?version-check=123",
+        mode: "cors",
+      },
+      respondWith,
+    });
+    expect(respondWith).not.toHaveBeenCalled();
+    expect(sw.caches.match).not.toHaveBeenCalled();
+  });
+
+  it("still answers ordinary files from the saved copy", () => {
+    const sw = loadServiceWorker({ fetchImpl: async () => new Response("x") });
+    const respondWith = vi.fn();
+    sw.handlers.fetch({
+      request: { method: "GET", url: "https://app.test/assets/app.js", mode: "cors" },
+      respondWith,
+    });
+    expect(respondWith).toHaveBeenCalledTimes(1);
+  });
+});

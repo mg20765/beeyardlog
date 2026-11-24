@@ -17,6 +17,8 @@ import GearList from "./components/GearList.jsx";
 import ExpiryDates, { ExpiryBanner } from "./components/ExpiryDates.jsx";
 import ViewTabs from "./components/ViewTabs.jsx";
 import BackupCard from "./components/BackupCard.jsx";
+import UpdateBanner from "./components/UpdateBanner.jsx";
+import useUpdateAvailable from "./hooks/useUpdateAvailable.js";
 import { loadExpiry, saveExpiry } from "./utils/expiry.js";
 import { backupStatus, storageProtection } from "./utils/backupStatus.js";
 import {
@@ -27,6 +29,8 @@ import {
   loadUntracked,
   saveUntracked,
   toggleUntracked,
+  loadOnlyDue,
+  saveOnlyDue,
 } from "./utils/hiveStatus.js";
 import { todayLocal } from "./utils/date.js";
 import ActionButtons from "./components/ActionButtons.jsx";
@@ -93,6 +97,16 @@ export default function HiveLogbook() {
     saveUntracked(next);
   };
 
+  // Whether the Hives view lists only the hives that are due.
+  const [onlyDue, setOnlyDue] = useState(loadOnlyDue);
+  const changeOnlyDue = (on) => {
+    setOnlyDue(on);
+    saveOnlyDue(on);
+  };
+
+  // A newer version of the app is online.
+  const updateAvailable = useUpdateAvailable();
+
   const overdue = overdueCount(
     hiveStatuses(log, todayLocal(), limit, untracked),
   );
@@ -123,6 +137,10 @@ export default function HiveLogbook() {
     <div className="hive-app">
       <Header justSaved={justSaved} />
 
+      {updateAvailable && (
+        <UpdateBanner onUpdate={() => window.location.reload()} />
+      )}
+
       <ExpiryBanner expiry={expiry} />
 
       <ViewTabs view={view} onChange={setView} overdue={overdue} />
@@ -134,6 +152,8 @@ export default function HiveLogbook() {
           onLimitChange={changeLimit}
           untracked={untracked}
           onToggleUntracked={changeUntracked}
+          onlyDue={onlyDue}
+          onOnlyDueChange={changeOnlyDue}
           deleteEntry={deleteEntry}
           updateEntry={updateEntry}
         />
