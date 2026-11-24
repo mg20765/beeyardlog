@@ -10,6 +10,8 @@ import { isHiveIdMissing, getInputProblems } from "./validation.js";
 const FIELDS = [
   { column: "Yard #", name: "yardNo", label: "Yard #", type: "text", core: true },
   { column: "Hive ID", name: "hiveId", label: "Hive ID", type: "text", core: true },
+  { column: "Initials", name: "initials", label: "Initials", type: "text", core: true },
+  { column: "Group", name: "group", label: "Group", type: "text", core: true },
   { column: "Date", name: "date", label: "Date", type: "date", core: true },
   { column: "Temp (°C)", name: "weatherTemp", label: "Temp (°C)", type: "number", inputMode: "decimal" },
   { column: "Brood Coverage %", name: "broodPct", label: "Brood coverage %", type: "number", inputMode: "decimal" },
@@ -47,7 +49,11 @@ export function applyEdits(row, edits) {
   for (const f of editableFields(row)) {
     if (!(f.name in edits)) continue;
     const value = edits[f.name];
-    next[f.column] = typeof value === "string" ? value.trim() : value;
+    const trimmed = typeof value === "string" ? value.trim() : value;
+    // A box left empty on an older entry that never had it adds nothing, so the
+    // entry does not count as changed.
+    if (trimmed === "" && !(f.column in row)) continue;
+    next[f.column] = f.column === "Initials" ? String(trimmed).toUpperCase() : trimmed;
   }
   if (row["Mite Method"] !== "Not done") {
     next["Mites per 100 Bees"] = mitesPer100(next["Bees Sampled"], next["Mites Counted"]) ?? "";

@@ -26,9 +26,14 @@ export function daysBetween(from, to) {
 
 const clean = (v) => String(v ?? "").trim();
 
-// A hive's identity: Yard # and Hive ID together, ignoring capitals and spaces.
-export const hiveKey = (yard, hiveId) =>
-  `${clean(yard).toLowerCase()}|${clean(hiveId).toLowerCase()}`;
+// A hive's identity: Yard #, Hive ID and, when people share a site, the initials
+// of the person who looks after it, ignoring capitals and spaces. With no
+// initials the key is the same as it always was, so earlier call-outs still match.
+export const hiveKey = (yard, hiveId, initials = "") => {
+  const base = `${clean(yard).toLowerCase()}|${clean(hiveId).toLowerCase()}`;
+  const who = clean(initials).toLowerCase();
+  return who ? `${base}|${who}` : base;
+};
 
 // One entry per hive: its latest inspection date, days since, and whether it is
 // at or past the limit. Longest-unchecked first. Entries with no hive name or
@@ -38,21 +43,32 @@ export const hiveKey = (yard, hiveId) =>
 // as a one-off call-out. They stay on the list, last, but are never overdue.
 export function hiveStatuses(log, today, limitDays = DEFAULT_LIMIT_DAYS, untracked = []) {
   const latest = new Map();
+  const yardGroups = new Map();
   for (const r of log) {
     const hiveId = clean(r["Hive ID"]);
     const date = clean(r.Date);
     if (!hiveId || dayNumber(date) === null) continue;
     const yard = clean(r["Yard #"]);
-    const key = hiveKey(yard, hiveId);
+    const initials = clean(r.Initials).toUpperCase();
+    const group = clean(r.Group);
+    const key = hiveKey(yard, hiveId, initials);
     const seen = latest.get(key);
-    if (!seen || date > seen.lastDate) latest.set(key, { key, yard, hiveId, lastDate: date });
+    if (!seen || date > seen.lastDate) {
+      latest.set(key, { key, yard, hiveId, initials, group, lastDate: date });
+    }
+    // The latest group given to each yard, for hives whose own entry has none.
+    if (group) {
+      const known = yardGroups.get(yard.toLowerCase());
+      if (!known || date >= known.date) yardGroups.set(yard.toLowerCase(), { date, group });
+    }
   }
   return [...latest.values()]
     .map((h) => {
       // A date in the future counts as today rather than a negative number.
       const daysSince = Math.max(0, daysBetween(h.lastDate, today) ?? 0);
       const tracked = !untracked.includes(h.key);
-      return { ...h, daysSince, tracked, overdue: tracked && daysSince >= limitDays };
+      const group = h.group || yardGroups.get(h.yard.toLowerCase())?.group || "";
+      return { ...h, group, daysSince, tracked, overdue: tracked && daysSince >= limitDays };
     })
     .sort((a, b) => Number(b.tracked) - Number(a.tracked) || b.daysSince - a.daysSince);
 }
@@ -138,4 +154,26 @@ export function saveOnlyDue(on, storage = browserStorage()) {
   } catch {
     // Not saved; the choice still applies until the app is closed.
   }
+}
+
+// Narrows the hive list to one person's hives and/or one group. Empty means
+// everyone and every group.
+export function filterStatuses(statuses, { initials = "", group = "" } = {}) {
+  const who = clean(initials).toLowerCase();
+  const wantedGroup = clean(group).toLowerCase();
+  return statuses.filter(
+    (h) =>
+      (!who || h.initials.toLowerCase() === who) &&
+      (!wantedGroup || h.group.toLowerCase() === wantedGroup),
+  );
+}
+
+// The people and the groups to choose from, once each.
+export const statusInitials = (statuses) =>
+  [...new Set(statuses.map((h) => h.initials).filter(Boolean))].sort();
+
+export function statusGroups(statuses) {
+  const byName = new Map();
+  for (const h of statuses) if (h.group) byName.set(h.group.toLowerCase(), h.group);
+  return [...byName.values()].sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
 }

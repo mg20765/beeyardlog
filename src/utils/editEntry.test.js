@@ -25,14 +25,16 @@ const row = (over = {}) => ({
 describe("editableFields", () => {
   const names = (r) => editableFields(r).map((f) => f.name);
 
-  it("always offers Yard #, Hive ID, Date and Notes", () => {
-    expect(names(row())).toEqual(["yardNo", "hiveId", "date", "notes"]);
+  it("always offers Yard #, Hive ID, Initials, Group, Date and Notes", () => {
+    expect(names(row())).toEqual(["yardNo", "hiveId", "initials", "group", "date", "notes"]);
   });
 
   it("offers the other typed fields only when the entry has a value for them", () => {
     expect(names(row({ "Temp (°C)": "17", "Brood Coverage %": "80" }))).toEqual([
       "yardNo",
       "hiveId",
+      "initials",
+      "group",
       "date",
       "weatherTemp",
       "broodPct",
@@ -247,5 +249,40 @@ describe("swapYardAndHive", () => {
   it("an empty Yard # swapped in would leave no Hive ID, which is caught", () => {
     const edits = swapYardAndHive({ ...rowToEdits(row({ "Yard #": "", "Hive ID": "Wnd" })) });
     expect(getEditProblems(edits, row()).map((p) => p.field)).toContain("hiveId");
+  });
+});
+
+describe("initials and group when editing", () => {
+  it("are always offered, so they can be added to older entries", () => {
+    const names = editableFields(row()).map((f) => f.name);
+    expect(names).toContain("initials");
+    expect(names).toContain("group");
+  });
+
+  it("start empty for an entry saved before they existed", () => {
+    const edits = rowToEdits(row());
+    expect(edits.initials).toBe("");
+    expect(edits.group).toBe("");
+  });
+
+  it("are saved, with the initials in capitals", () => {
+    const saved = applyEdits(row(), { ...rowToEdits(row()), initials: " mg ", group: " Early sites " });
+    expect(saved.Initials).toBe("MG");
+    expect(saved.Group).toBe("Early sites");
+  });
+
+  it("add nothing to an older entry when left empty, so it does not count as changed", () => {
+    const original = row();
+    const saved = applyEdits(original, rowToEdits(original));
+    expect("Initials" in saved).toBe(false);
+    expect("Group" in saved).toBe(false);
+    expect(JSON.stringify(saved)).toBe(JSON.stringify(original));
+  });
+
+  it("can be cleared again", () => {
+    const original = row({ Initials: "MG", Group: "Early sites" });
+    const saved = applyEdits(original, { ...rowToEdits(original), initials: "", group: "" });
+    expect(saved.Initials).toBe("");
+    expect(saved.Group).toBe("");
   });
 });

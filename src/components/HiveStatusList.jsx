@@ -4,6 +4,9 @@ import {
   hiveStatuses,
   hiveKey,
   dueOnly,
+  filterStatuses,
+  statusInitials,
+  statusGroups,
   overdueCount,
   LIMIT_CHOICES_DAYS,
 } from "../utils/hiveStatus.js";
@@ -18,7 +21,8 @@ function daysAgo(days) {
   return `${plural(days, "day")} ago`;
 }
 
-const hiveLabel = (h) => `${h.yard ? `${h.yard} · ` : ""}${h.hiveId}`;
+const hiveLabel = (h) =>
+  `${h.yard ? `${h.yard} · ` : ""}${h.hiveId}${h.initials ? ` (${h.initials})` : ""}`;
 
 function HiveRow({ hive, onOpen }) {
   return (
@@ -54,7 +58,9 @@ function HiveDetail({
   updateEntry,
 }) {
   const rows = sortNewestFirst(
-    log.filter((r) => hiveKey(r["Yard #"], r["Hive ID"]) === open.key),
+    log.filter(
+      (r) => hiveKey(r["Yard #"], r["Hive ID"], r.Initials) === open.key,
+    ),
   );
   return (
     <div className="hive-detail">
@@ -113,11 +119,14 @@ export default function HiveStatusList({
   onToggleUntracked,
   onlyDue,
   onOnlyDueChange,
+  filters,
+  onFiltersChange,
   deleteEntry,
   updateEntry,
 }) {
   const [open, setOpen] = useState(null); // { key, label } of the hive being looked at
-  const statuses = hiveStatuses(log, todayLocal(), limit, untracked);
+  const everyHive = hiveStatuses(log, todayLocal(), limit, untracked);
+  const statuses = filterStatuses(everyHive, filters);
 
   if (open) {
     return (
@@ -133,7 +142,7 @@ export default function HiveStatusList({
     );
   }
 
-  if (statuses.length === 0) {
+  if (everyHive.length === 0) {
     return (
       <div className="hive-status">
         <p className="hive-section__title">Hives to check</p>
@@ -149,6 +158,8 @@ export default function HiveStatusList({
   const overdue = overdueCount(statuses);
   const limitText = `${weeks(limit)}+ weeks`;
   const openHive = (h) => setOpen({ key: h.key, label: hiveLabel(h) });
+  const people = statusInitials(everyHive);
+  const groupNames = statusGroups(everyHive);
 
   return (
     <div className="hive-status">
@@ -182,6 +193,50 @@ export default function HiveStatusList({
           ))}
         </select>
       </div>
+      {people.length > 1 && (
+        <div className="hive-field">
+          <label className="hive-label" htmlFor="status-person">
+            Whose hives
+          </label>
+          <select
+            id="status-person"
+            className="hive-input"
+            value={filters.initials}
+            onChange={(e) =>
+              onFiltersChange({ ...filters, initials: e.target.value })
+            }
+          >
+            <option value="">Everyone</option>
+            {people.map((p) => (
+              <option key={p} value={p}>
+                {p}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+      {groupNames.length > 0 && (
+        <div className="hive-field">
+          <label className="hive-label" htmlFor="status-group">
+            Group
+          </label>
+          <select
+            id="status-group"
+            className="hive-input"
+            value={filters.group}
+            onChange={(e) =>
+              onFiltersChange({ ...filters, group: e.target.value })
+            }
+          >
+            <option value="">All groups</option>
+            {groupNames.map((g) => (
+              <option key={g} value={g}>
+                {g}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
       <label className="hive-chk-item">
         <input
           type="checkbox"

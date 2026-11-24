@@ -7,6 +7,8 @@ import { isAtOrAboveThreshold } from "../utils/mites.js";
 // time, so this list can be longer than what actually shows for any row.
 const DETAIL_FIELDS = [
   "Yard #",
+  "Initials",
+  "Group",
   "Temp (°C)",
   "Weather",
   "Temperament",
@@ -81,6 +83,9 @@ export default function LogEntries({ rows, deleteEntry, updateEntry }) {
                 <span className="hive-log-title">
                   {r["Hive ID"] || "Unnamed hive"}
                   <span className="hive-badge">{r["Date"] || "–"}</span>
+                  {r["Initials"] && (
+                    <span className="hive-badge">{r["Initials"]}</span>
+                  )}
                 </span>
                 <span className="hive-log-sub">
                   Pop: {r["Population"] || "–"} · Queen:{" "}

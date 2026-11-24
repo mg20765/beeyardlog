@@ -69,6 +69,7 @@ export default function HiveLogbook() {
     lastBackupDate,
     backedUpBefore,
     changesSinceBackup,
+    groups,
     backupToFile,
     restoreFromFile,
   } = useHiveLog();
@@ -96,6 +97,9 @@ export default function HiveLogbook() {
     setUntracked(next);
     saveUntracked(next);
   };
+
+  // Which person's hives and which group the Hives view shows. Empty means all.
+  const [hiveFilters, setHiveFilters] = useState({ initials: "", group: "" });
 
   // Whether the Hives view lists only the hives that are due.
   const [onlyDue, setOnlyDue] = useState(loadOnlyDue);
@@ -154,6 +158,8 @@ export default function HiveLogbook() {
           onToggleUntracked={changeUntracked}
           onlyDue={onlyDue}
           onOnlyDueChange={changeOnlyDue}
+          filters={hiveFilters}
+          onFiltersChange={setHiveFilters}
           deleteEntry={deleteEntry}
           updateEntry={updateEntry}
         />
@@ -182,6 +188,7 @@ export default function HiveLogbook() {
               form={form}
               set={set}
               hiveIdError={hiveIdError}
+              groups={groups}
             />
             <WeatherSection form={form} set={set} />
             <ConditionSection form={form} set={set} />

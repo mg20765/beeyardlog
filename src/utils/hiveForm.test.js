@@ -188,3 +188,23 @@ describe("formToRow", () => {
     expect(row.Notes).toBe("calm hive");
   });
 });
+
+describe("initials and group on the form", () => {
+  it("start empty", () => {
+    const f = initialForm();
+    expect(f.initials).toBe("");
+    expect(f.group).toBe("");
+  });
+
+  it("are saved in the row, with the initials in capitals and both trimmed", () => {
+    const row = formToRow({ ...initialForm(), hiveId: "7", initials: "  mg ", group: "  Pollination " });
+    expect(row.Initials).toBe("MG");
+    expect(row.Group).toBe("Pollination");
+  });
+
+  it("are left out of the row when nothing is typed, so solo users get no empty columns", () => {
+    const row = formToRow({ ...initialForm(), hiveId: "7" });
+    expect("Initials" in row).toBe(false);
+    expect("Group" in row).toBe(false);
+  });
+});

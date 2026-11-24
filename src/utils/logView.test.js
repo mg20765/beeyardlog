@@ -71,3 +71,19 @@ describe("filterLog", () => {
     expect(filterLog([{ id: 9 }], "")).toEqual([{ id: 9 }]);
   });
 });
+
+describe("searching by initials and group", () => {
+  const log = [
+    row(1, "2026-10-01", "7", { Initials: "MG", Group: "Pollination" }),
+    row(2, "2026-10-02", "7", { Initials: "JB", Group: "Early sites" }),
+    row(3, "2026-10-03", "8", { Initials: "", Group: "" }),
+  ];
+
+  it("finds entries by who did them", () => {
+    expect(filterLog(log, "jb").map((r) => r.id)).toEqual([2]);
+  });
+
+  it("finds entries by group", () => {
+    expect(filterLog(log, "pollin").map((r) => r.id)).toEqual([1]);
+  });
+});
