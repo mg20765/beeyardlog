@@ -10,6 +10,9 @@ import {
   toggleUntracked,
   loadUntracked,
   saveUntracked,
+  dueOnly,
+  loadOnlyDue,
+  saveOnlyDue,
 } from "./hiveStatus.js";
 
 const row = (yard, hive, date, id = 1) => ({
@@ -253,5 +256,58 @@ describe("saving the untracked list", () => {
     };
     expect(loadUntracked(blocked)).toEqual([]);
     expect(() => saveUntracked(["a|b"], blocked)).not.toThrow();
+  });
+});
+
+describe("showing only the hives that are due", () => {
+  const today = "2026-11-09";
+  const log = [
+    row("1", "Old", "2026-09-01", 1),
+    row("1", "Fresh", "2026-11-08", 2),
+    row("1", "Call-out", "2026-09-01", 3),
+  ];
+
+  it("keeps only the overdue hives", () => {
+    const list = hiveStatuses(log, today, 28, []);
+    expect(dueOnly(list).map((h) => h.hiveId).sort()).toEqual(["Call-out", "Old"]);
+  });
+
+  it("leaves out hives set aside as call-outs or on hold", () => {
+    const list = hiveStatuses(log, today, 28, [hiveKey("1", "Call-out")]);
+    expect(dueOnly(list).map((h) => h.hiveId)).toEqual(["Old"]);
+  });
+
+  it("is empty when nothing is due", () => {
+    expect(dueOnly(hiveStatuses([row("1", "Fresh", "2026-11-08")], today))).toEqual([]);
+  });
+
+  it("does not change the list it was given", () => {
+    const list = hiveStatuses(log, today);
+    dueOnly(list);
+    expect(list).toHaveLength(3);
+  });
+});
+
+describe("remembering the only-due choice", () => {
+  it("remembers on and off", () => {
+    const store = fakeStorage();
+    expect(loadOnlyDue(store)).toBe(false);
+    saveOnlyDue(true, store);
+    expect(loadOnlyDue(store)).toBe(true);
+    saveOnlyDue(false, store);
+    expect(loadOnlyDue(store)).toBe(false);
+  });
+
+  it("starts off, and falls back to off when storage is blocked", () => {
+    const blocked = {
+      getItem() {
+        throw new Error("blocked");
+      },
+      setItem() {
+        throw new Error("blocked");
+      },
+    };
+    expect(loadOnlyDue(blocked)).toBe(false);
+    expect(() => saveOnlyDue(true, blocked)).not.toThrow();
   });
 });
