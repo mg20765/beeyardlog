@@ -19,9 +19,19 @@ import {
 } from "../db/hiveDb.js";
 import { applyEdits } from "../utils/editEntry.js";
 import { downloadBackup, readBackupFile } from "../utils/backup.js";
-import { loadDraft, saveDraft, clearDraft, isPristine } from "../utils/draft.js";
+import {
+  loadDraft,
+  saveDraft,
+  clearDraft,
+  isPristine,
+} from "../utils/draft.js";
 import { requestPersistentStorage } from "../utils/persist.js";
-import { loadLastBackupDate, saveLastBackupDate } from "../utils/backupStatus.js";
+import {
+  loadLastBackupDate,
+  saveLastBackupDate,
+} from "../utils/backupStatus.js";
+import { loadInitials, saveInitials } from "../utils/initials.js";
+import { groupSuggestions, nextGroup } from "../utils/groups.js";
 import { createSync } from "../utils/sync.js";
 import {
   maxId,
@@ -65,12 +75,15 @@ function writeSavedNumber(key, n) {
   }
 }
 
+// A blank form with the remembered initials already in place.
+const freshForm = () => ({ ...initialForm(), initials: loadInitials() });
+
 // Owns the inspection form state, the saved log (backed by IndexedDB via
 // idb), and the add/delete/clear/export/backup actions used by the app.
 export default function useHiveLog() {
   // A half-filled form saved before the page reloaded (see utils/draft.js).
   const [savedDraft] = useState(() => loadDraft());
-  const [form, setForm] = useState(() => savedDraft ?? initialForm());
+  const [form, setForm] = useState(() => savedDraft ?? freshForm());
   const [draftRestored, setDraftRestored] = useState(savedDraft !== null);
   const [log, setLog] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -144,7 +157,11 @@ export default function useHiveLog() {
       refreshLog();
       const f = formRef.current;
       const today = todayLocal();
-      if (isPristine(f) && f.date === defaultDateRef.current && f.date !== today) {
+      if (
+        isPristine(f) &&
+        f.date === defaultDateRef.current &&
+        f.date !== today
+      ) {
         defaultDateRef.current = today;
         setForm((prev) => ({ ...prev, date: today }));
       }
@@ -190,7 +207,7 @@ export default function useHiveLog() {
 
   // A blank form, dated today.
   const resetForm = () => {
-    const fresh = initialForm();
+    const fresh = freshForm();
     defaultDateRef.current = fresh.date;
     setForm(fresh);
   };
@@ -198,9 +215,21 @@ export default function useHiveLog() {
   const set = (key) => (e) => {
     if (key === "hiveId") setHiveIdError(false);
     setInputProblems(null);
+    const value = e && e.target !== undefined ? e.target.value : e;
     setForm((f) => ({
       ...f,
-      [key]: e && e.target !== undefined ? e.target.value : e,
+      [key]: value,
+      // The group follows the yard, unless you typed one yourself.
+      ...(key === "yardNo"
+        ? {
+            group: nextGroup({
+              prevGroup: f.group,
+              prevYard: f.yardNo,
+              newYard: value,
+              log,
+            }),
+          }
+        : {}),
     }));
   };
 
@@ -217,6 +246,7 @@ export default function useHiveLog() {
     try {
       const saved = await addInspection(formToRow(form));
       setLog((prev) => [...prev, saved]);
+      saveInitials(form.initials); // remembered for the next entry
       resetForm();
       setDraftRestored(false);
       setMissingFields(null);
@@ -429,6 +459,7 @@ export default function useHiveLog() {
     updateEntry,
     clearLog,
     exportAll,
+    groups: groupSuggestions(log),
     lastBackupDate,
     backedUpBefore: lastBackupId > 0,
     changesSinceBackup: changesTotal,

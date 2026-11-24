@@ -9,11 +9,14 @@ import { todayLocal } from "./date.js";
 // already live on people's phones, so renaming it would orphan them.
 export const DRAFT_KEY = "yardbook_form_draft";
 
-// True when nothing has been typed or ticked. The date is ignored because it
-// is pre-filled with today's date.
+// Boxes the app fills in for you: today's date, the remembered initials and the
+// group of the yard. They don't count as the form having been started.
+const FILLED_IN = ["date", "initials", "group"];
+
+// True when nothing has been typed or ticked.
 export function isPristine(form) {
   const blank = initialForm();
-  return Object.keys(blank).every((key) => key === "date" || form[key] === blank[key]);
+  return Object.keys(blank).every((key) => FILLED_IN.includes(key) || form[key] === blank[key]);
 }
 
 // Lays saved values over a blank form, keeping only keys the form still has

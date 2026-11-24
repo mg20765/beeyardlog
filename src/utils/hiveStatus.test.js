@@ -13,6 +13,9 @@ import {
   dueOnly,
   loadOnlyDue,
   saveOnlyDue,
+  filterStatuses,
+  statusInitials,
+  statusGroups,
 } from "./hiveStatus.js";
 
 const row = (yard, hive, date, id = 1) => ({
@@ -309,5 +312,118 @@ describe("remembering the only-due choice", () => {
     };
     expect(loadOnlyDue(blocked)).toBe(false);
     expect(() => saveOnlyDue(true, blocked)).not.toThrow();
+  });
+});
+
+// Entries with who did them and which group the site is in.
+const tagged = (yard, hive, date, initials = "", group = "", id = 1) => ({
+  ...row(yard, hive, date, id),
+  Initials: initials,
+  Group: group,
+});
+
+describe("hives belong to the person who looks after them", () => {
+  const today = "2026-11-09";
+
+  it("keeps two people's Hive 7 on the same site apart", () => {
+    const log = [
+      tagged("Amb", "7", "2026-11-01", "MG", "", 1),
+      tagged("Amb", "7", "2026-10-01", "JB", "", 2),
+    ];
+    const list = hiveStatuses(log, today);
+    expect(list).toHaveLength(2);
+    expect(list.map((h) => h.initials).sort()).toEqual(["JB", "MG"]);
+  });
+
+  it("treats initials in any capitals as the same person", () => {
+    const log = [tagged("Amb", "7", "2026-10-01", "mg", "", 1), tagged("Amb", "7", "2026-11-01", "MG", "", 2)];
+    expect(hiveStatuses(log, today)).toHaveLength(1);
+  });
+
+  it("leaves hives with no initials exactly as they were, so older call-outs still match", () => {
+    expect(hiveKey("Amb", "Dino")).toBe("amb|dino");
+    expect(hiveKey("Amb", "Dino", "")).toBe("amb|dino");
+    expect(hiveKey("Amb", "Dino", "MG")).toBe("amb|dino|mg");
+    const list = hiveStatuses([row("Amb", "Dino", "2026-09-01")], today, 28, ["amb|dino"]);
+    expect(list[0].tracked).toBe(false);
+  });
+
+  it("puts initials on the hive, empty when there are none", () => {
+    const list = hiveStatuses([tagged("A", "1", "2026-11-01", "MG"), row("B", "2", "2026-11-01", 2)], today);
+    expect(list.find((h) => h.yard === "A").initials).toBe("MG");
+    expect(list.find((h) => h.yard === "B").initials).toBe("");
+  });
+});
+
+describe("the group of a hive", () => {
+  const today = "2026-11-09";
+
+  it("is the group on its latest entry", () => {
+    const log = [
+      tagged("Amb", "1", "2026-10-01", "", "Early sites", 1),
+      tagged("Amb", "1", "2026-11-01", "", "Pollination", 2),
+    ];
+    expect(hiveStatuses(log, today)[0].group).toBe("Pollination");
+  });
+
+  it("falls back to the yard's group when its own entry has none", () => {
+    const log = [
+      tagged("Amb", "1", "2026-11-01", "", "", 1),
+      tagged("Amb", "2", "2026-10-15", "", "Pollination", 2),
+    ];
+    const list = hiveStatuses(log, today);
+    expect(list.find((h) => h.hiveId === "1").group).toBe("Pollination");
+  });
+
+  it("is empty when neither the hive nor its yard has one", () => {
+    expect(hiveStatuses([tagged("Amb", "1", "2026-11-01")], today)[0].group).toBe("");
+  });
+});
+
+describe("filtering the hive list", () => {
+  const today = "2026-11-09";
+  const list = hiveStatuses(
+    [
+      tagged("Amb", "1", "2026-11-01", "MG", "Pollination", 1),
+      tagged("Amb", "2", "2026-11-01", "JB", "Pollination", 2),
+      tagged("Kokako", "1", "2026-11-01", "MG", "Late sites", 3),
+      tagged("Wnd", "1", "2026-11-01", "", "", 4),
+    ],
+    today,
+  );
+
+  it("shows everything when no filter is chosen", () => {
+    expect(filterStatuses(list, { initials: "", group: "" })).toHaveLength(4);
+    expect(filterStatuses(list)).toHaveLength(4);
+  });
+
+  it("filters by person, ignoring capitals", () => {
+    expect(filterStatuses(list, { initials: "mg" }).map((h) => h.yard).sort()).toEqual(["Amb", "Kokako"]);
+  });
+
+  it("filters by group, ignoring capitals", () => {
+    expect(filterStatuses(list, { group: "pollination" })).toHaveLength(2);
+  });
+
+  it("filters by both together", () => {
+    const only = filterStatuses(list, { initials: "MG", group: "Pollination" });
+    expect(only).toHaveLength(1);
+    expect(only[0].yard).toBe("Amb");
+  });
+
+  it("does not change the list it was given", () => {
+    filterStatuses(list, { initials: "MG" });
+    expect(list).toHaveLength(4);
+  });
+
+  it("lists the people and groups to choose from, once each", () => {
+    expect(statusInitials(list)).toEqual(["JB", "MG"]);
+    expect(statusGroups(list)).toEqual(["Late sites", "Pollination"]);
+  });
+
+  it("has nothing to choose from when no one used them", () => {
+    const plain = hiveStatuses([row("A", "1", "2026-11-01")], today);
+    expect(statusInitials(plain)).toEqual([]);
+    expect(statusGroups(plain)).toEqual([]);
   });
 });

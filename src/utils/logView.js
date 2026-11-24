@@ -11,9 +11,9 @@ export function sortNewestFirst(log) {
   });
 }
 
-const SEARCHED = ["Hive ID", "Yard #", "Notes", "Date"];
+const SEARCHED = ["Hive ID", "Yard #", "Initials", "Group", "Notes", "Date"];
 
-// Entries whose Hive ID, yard, notes or date contain the search, ignoring
+// Entries whose Hive ID, yard, initials, group, notes or date contain the search, ignoring
 // capitals and spaces around it. An empty search returns the whole log.
 export function filterLog(log, query) {
   const q = String(query ?? "").trim().toLowerCase();

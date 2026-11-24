@@ -6,6 +6,10 @@ export const initialForm = () => ({
   date: todayLocal(),
   hiveId: "",
   yardNo: "",
+  // Who did the inspection (several people can share a site) and which group
+  // the site belongs to, such as pollination or early sites.
+  initials: "",
+  group: "",
   weatherTemp: "",
   weatherCondition: "",
   temperament: "",
@@ -121,6 +125,9 @@ export function formToRow(f) {
     // Trimmed so "H1 " and "H1" don't become two different hives in Excel.
     "Hive ID": f.hiveId.trim(),
     "Yard #": f.yardNo.trim(),
+    // Only saved when typed, so people who do not use them get no empty columns.
+    ...(f.initials.trim() ? { Initials: f.initials.trim().toUpperCase() } : {}),
+    ...(f.group.trim() ? { Group: f.group.trim() } : {}),
     "Temp (°C)": f.weatherTemp,
     Weather: f.weatherCondition,
     Temperament: f.temperament,

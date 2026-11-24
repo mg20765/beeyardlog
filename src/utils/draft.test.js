@@ -153,3 +153,14 @@ describe("loadDraft: a draft carried over to another day", () => {
     expect(loadDraft(s, "2026-10-21").date).toBe("2026-10-19");
   });
 });
+
+describe("isPristine with remembered initials and a filled-in group", () => {
+  it("still counts as blank, because both are filled in for you", () => {
+    expect(isPristine({ ...initialForm(), initials: "MG" })).toBe(true);
+    expect(isPristine({ ...initialForm(), group: "Pollination" })).toBe(true);
+  });
+
+  it("is not blank once something else has been typed", () => {
+    expect(isPristine({ ...initialForm(), initials: "MG", hiveId: "7" })).toBe(false);
+  });
+});
